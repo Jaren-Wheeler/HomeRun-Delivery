@@ -1,11 +1,10 @@
-import {useState, useEffect} from 'react-router-dom';
+import {useState, useEffect} from 'react';
+import MapComponent from '../components/MapComponent';
 
 
 const delivererDashboard = () => {
 
     return (
-        <div class="map-container">
-
-        </div>
+        <h1>Deliverer Dashboard</h1>
     )
 }

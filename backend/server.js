@@ -4,10 +4,15 @@ require('dotenv').config();
 const db = require("./config/db"); // initialize the database
 const initDb = require("./config/dbSync");
 
-const PORT = 3000;
+const PORT = process.env.PORT || 5000;
 
 const app = express();
- 
+app.use(cors());
+
+// import routes
+const mapRoutes = require('./routes/mapRoutes');
+app.use("/api", mapRoutes);
+
 app.get('/', (req,res) => {
     res.send('Server is running.')
 })
