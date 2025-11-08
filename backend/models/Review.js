@@ -16,9 +16,12 @@ const Review = sequelize.define("Review", {
     },
     createdAt: {
         type: DataTypes.DATE,
-        allowedNull: false
+        allowNull: false
+    },
+    user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     }
 });
 
-Review.belongsTo(User, {foreignKey: "review_id"});
 module.exports = Review;

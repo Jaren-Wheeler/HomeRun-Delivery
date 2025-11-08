@@ -1,8 +1,6 @@
 const {DataTypes} = require("sequelize");
 const sequelize = require("../config/db");
 
-const User = require("./User");
-const Payment = require("./Payment");
 
 const Delivery = sequelize.define("Delivery", {
     delivery_id: {
@@ -12,32 +10,31 @@ const Delivery = sequelize.define("Delivery", {
     },
     pickup_address: {
         type: DataTypes.STRING,
-        allowedNull: false
+        allowNull: false
     },
     dropoff_address: {
         type: DataTypes.STRING,
-        allowedNull: false
+        allowNull: false
     },
     item_description: {
         type: DataTypes.STRING,
-        allowedNull: false
+        allowNull: false
     },
     proposed_payment: {
         type: DataTypes.DECIMAL,
-        allowedNull: false
+        allowNull: false
     },
     status: {
         type: DataTypes.STRING,
-        allowedNull: false
+        allowNull: false
     },
     createdAt: {
         type: DataTypes.DATE
+    },
+    user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     }
-
 });
-
-Delivery.belongsTo(User, {foreignKey: "user_id"});
-
-Delivery.hasOne(Payment, {foreignKey: "payment_id", onDelete: "CASCADE"});
 
 module.exports = Delivery;

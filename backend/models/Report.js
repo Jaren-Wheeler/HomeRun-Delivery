@@ -10,8 +10,12 @@ const Report = sequelize.define("Report", {
     message: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     }
 });
 
-Report.belongsTo(User, {foreignKey: "report_id"});
+
 module.exports = Report;

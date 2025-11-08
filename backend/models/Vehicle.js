@@ -1,7 +1,6 @@
 const {DataTypes} = require("sequelize");
 const sequelize = require("../config/db");
 
-const User = require("./User");
 
 const Vehicle = sequelize.define("Vehicle", {
     vehicle_id: {
@@ -34,13 +33,5 @@ const Vehicle = sequelize.define("Vehicle", {
         allowNull: false
     }
 });
-
-Vehicle.associate = (models) => {
-    Vehicle.belongsToMany(models.User), {
-        through: "UserVehicle",
-        foreignKey: "vehicle_id",
-        otherKey: "user_id"
-    };
-};
 
 module.exports = Vehicle;

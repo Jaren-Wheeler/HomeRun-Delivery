@@ -1,11 +1,6 @@
 const {DataTypes} = require("sequelize");
 const sequelize = require("../config/db");
 
-const Delivery = require("./Delivery");
-const Review = require("./Review");
-const Report = require("./Report");
-const Vehicle = require("./Vehicle");
-
 const User = sequelize.define("User", {
     user_id: {
         type: DataTypes.INTEGER,
@@ -55,19 +50,5 @@ const User = sequelize.define("User", {
         allowNull: false
     }
 });
-
-// handle one to many relationships
-User.hasMany(Delivery, {foreignKey: "delvery_id", onDelete: "CASCADE"});
-User.hasMany(Review, {foreignKey: "review_id", onDelete: "CASCADE"});
-User.hasMany(Report, {foreignKey: "report_id", onDelete: "CASCADE"});
-
-// handle many to many relationship with Vehicle
-User.associate = (models) => {
-    User.belongsToMany(models.Vehicle), {
-        through: "UserVehicle",
-        foreignKey: "user_id",
-        otherKey: "vehicle_id"
-    };
-};
 
 module.exports = User;

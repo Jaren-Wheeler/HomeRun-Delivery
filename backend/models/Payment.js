@@ -1,8 +1,6 @@
 
 const {DataTypes} = require("sequelize");
-const sequelize = require("../config/db");
-
-const Delivery = require("./Delivery");
+const sequelize = require("../config/db.js");
 
 const Payment = sequelize.define("Payment", {
     payment_id: {
@@ -24,8 +22,11 @@ const Payment = sequelize.define("Payment", {
     },
     paymentDate: {
         type: DataTypes.DATE
+    },
+    delivery_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
     }
 });
 
-Payment.belongsTo(Delivery, {foreignKey: "payment_id"});
 module.exports = Payment;
