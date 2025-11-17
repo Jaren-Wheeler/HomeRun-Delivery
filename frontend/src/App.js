@@ -4,20 +4,18 @@ import PurchaserDashboard from './pages/PurchaserDashboard';
 import DelivererDashboard from './pages/DelivererDashboard';
 import Homepage from './pages/Homepage';
 import Payment from './pages/Payment';
-
+import NavBar from './components/NavBar';
 function App() {
   return (
   
     <Router>
-      <nav>
-        <Link to="/">Home Page</Link>
-        <Link to="/purchaser-dashboard">Purchaser Dashboard</Link>
-        <Link to="/deliverer-dashboard">Deliverer Dashboard</Link>
-        <Link to="/payment">Payment</Link>
-      </nav>
+      <NavBar></NavBar>
 
       <Routes>
-        <Route path="/deliverer-dashboard" element={<DelivererDashboard/>}></Route>
+        {/*<Route path="/" element={<Homepage />} />*/}
+         {/*<Route path="/purchaser-dashboard" element={<PurchaserDashboard />} />*/}
+        <Route path="/deliverer-dashboard" element={<DelivererDashboard />} />
+         {/*<Route path="/payment" element={<Payment />} />*/}
       </Routes>
     </Router>
   );
