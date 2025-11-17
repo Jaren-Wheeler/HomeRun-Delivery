@@ -2,7 +2,7 @@ import {useState, useEffect} from 'react';
 import MapComponent from '../components/MapComponent';
 import DelivererOptions from '../components/DelivererOptions';
 
-const delivererDashboard = () => {
+const DelivererDashboard = () => {
 
     return (
         <div style={{display:'flex', flexDirection: 'column', height: '100vh', gap: '1rem'}}>
