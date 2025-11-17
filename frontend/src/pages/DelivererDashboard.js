@@ -17,4 +17,4 @@ const DelivererDashboard = () => {
     )
 }
 
-export default delivererDashboard;
+export default DelivererDashboard;
