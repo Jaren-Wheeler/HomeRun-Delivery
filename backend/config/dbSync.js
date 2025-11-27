@@ -1,4 +1,4 @@
-const sequelize = require("./db.js");
+const sequelize = require('./db.js');
 
 const User = require('../models/User.js');
 const Delivery = require('../models/Delivery.js');
@@ -7,45 +7,68 @@ const Report = require('../models/Report.js');
 const Review = require('../models/Review.js');
 const Vehicle = require('../models/Vehicle.js');
 
-// handle one to many relationships
-Delivery.belongsTo(User, {foreignKey: "user_id"});
-User.hasMany(Delivery, {foreignKey: "user_id", onDelete: "CASCADE"});
+// User ↔ Delivery
+// Customer relationship
+User.hasMany(Delivery, {
+  foreignKey: 'customerId',
+  as: 'customerDeliveries',
+  onDelete: 'CASCADE',
+});
+Delivery.belongsTo(User, {
+  foreignKey: 'customerId',
+  as: 'customer',
+});
 
-Review.belongsTo(User, {foreignKey: "user_id"});
-User.hasMany(Review, {foreignKey: "user_id", onDelete: "CASCADE"});
+// Driver relationship
+User.hasMany(Delivery, {
+  foreignKey: 'driverId',
+  as: 'driverDeliveries',
+  onDelete: 'SET NULL',
+});
+Delivery.belongsTo(User, {
+  foreignKey: 'driverId',
+  as: 'driver',
+});
 
-Report.belongsTo(User, {foreignKey: "user_id"});
-User.hasMany(Report, {foreignKey: "user_id", onDelete: "CASCADE"});
+// Delivery ↔ Payment (One-to-One)
+Delivery.hasOne(Payment, {
+  foreignKey: 'deliveryId',
+  onDelete: 'CASCADE',
+});
+Payment.belongsTo(Delivery, {
+  foreignKey: 'deliveryId',
+});
 
-Payment.belongsTo(Delivery, {foreignKey: "delivery_id"});
-Delivery.hasOne(Payment, {foreignKey: "delivery_id", onDelete: "CASCADE"});
+// Reviews → User
+Review.belongsTo(User, { foreignKey: 'user_id' });
+User.hasMany(Review, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 
-// handle many to many relationship with Vehicle
+// Reports → User
+Report.belongsTo(User, { foreignKey: 'user_id' });
+User.hasMany(Report, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 
+// Vehicle Many-to-Many remains the same
 User.belongsToMany(Vehicle, {
-    through: "UserVehicle",
-    foreignKey: "user_id",
-    otherKey: "vehicle_id"
+  through: 'UserVehicle',
+  foreignKey: 'user_id',
+  otherKey: 'vehicle_id',
 });
-
-// handle many to many relationship with user=
 Vehicle.belongsToMany(User, {
-    through: "UserVehicle",
-    foreignKey: "vehicle_id",
-    otherKey: "user_id"
+  through: 'UserVehicle',
+  foreignKey: 'vehicle_id',
+  otherKey: 'user_id',
 });
 
-
-// initialize the database and create the tables
+// initialize database
 async function initDB() {
   try {
     await sequelize.authenticate();
-    console.log("Connected to SQL Server via Sequelize");
+    console.log('Connected to DB');
 
     await sequelize.sync({ alter: true });
-    console.log("Tables created/updated!");
+    console.log('Tables synced!');
   } catch (err) {
-    console.error("Database connection failed:", err);
+    console.error('Database connection failed:', err);
   }
 }
 
