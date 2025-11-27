@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
+import DeliveryDetails from "./DeliveryDetails";
+
 
 const MapComponent = () => {
   const [apiKey, setApiKey] = useState(null);
   const [deliveries, setDeliveries] = useState([]);
   const [markerPositions, setMarkerPositions] = useState([]);
-
+  const [activeMarker, setActiveMarker] = useState(null);
   const sleep = (ms) => new Promise(res => setTimeout(res, ms));
 
   // 1. Load Google Maps API Key
@@ -89,8 +91,17 @@ const MapComponent = () => {
             key={marker.id}
             position={{ lat: marker.lat, lng: marker.lng }}
             title={marker.address}
+            onClick={() => setActiveMarker(marker)}
           />
         ))}
+
+        {activeMarker && (
+            <InfoWindow
+                position={{lat: activeMarker.lat, lng: activeMarker.lng}}
+                onCloseClick={() =>setActiveMarker(null)}>
+                    <DeliveryDetails></DeliveryDetails>
+            </InfoWindow>
+        )}
       </GoogleMap>
     </LoadScript>
   );
