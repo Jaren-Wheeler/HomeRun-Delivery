@@ -58,9 +58,13 @@ const MapComponent = () => {
 
           positions.push({
             id: d.delivery_id,
+            item_description: d.item_description,
+            proposed_payment: d.proposed_payment,
+            pickup_address: d.pickup_address,
             lat: result[0].geometry.location.lat(),
             lng: result[0].geometry.location.lng(),
-            address: d.pickup_address,
+
+            delivery: d  // full DB row including User
           });
 
         } catch (err) {
@@ -90,7 +94,7 @@ const MapComponent = () => {
           <Marker
             key={marker.id}
             position={{ lat: marker.lat, lng: marker.lng }}
-            title={marker.address}
+            title={marker.pickup_address}
             onClick={() => setActiveMarker(marker)}
           />
         ))}
@@ -99,7 +103,7 @@ const MapComponent = () => {
             <InfoWindow
                 position={{lat: activeMarker.lat, lng: activeMarker.lng}}
                 onCloseClick={() =>setActiveMarker(null)}>
-                    <DeliveryDetails></DeliveryDetails>
+                    <DeliveryDetails delivery={activeMarker.delivery}></DeliveryDetails>
             </InfoWindow>
         )}
       </GoogleMap>

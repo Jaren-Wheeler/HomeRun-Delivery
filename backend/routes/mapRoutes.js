@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const Delivery = require("../models/Delivery");
-
+const User = require("../models/User")
 
 router.get("/maps-key", (req,res) => {
     res.json({key: process.env.GOOGLE_MAPS_API_KEY});
@@ -17,10 +17,17 @@ router.get("/markers", async (req, res) => {
                 "pickup_address",
                 "item_description",
                 "proposed_payment",
-                "status"
+                "status",
+                "user_id"
+            ],
+            include: [
+                {
+                    model: User,
+                    attributes: ["first_name", "last_name"]
+                }
             ]
         });
-
+        console.log(JSON.stringify(deliveries, null, 2));  
         res.json(deliveries);
     } catch (err) {
         console.error(err);
