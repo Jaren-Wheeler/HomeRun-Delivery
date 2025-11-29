@@ -39,7 +39,7 @@ const DelivererDashboard = () => {
                 </div>
 
                 {/* Map Component */}
-                <MapComponent searchCenter={searchCenter} style={{ height: '90vh' }} />
+                <MapComponent searchCenter={searchCenter} radius={selectedRadius} style={{ height: '90vh' }} />
 
             </div>
 

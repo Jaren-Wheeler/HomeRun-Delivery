@@ -10,7 +10,39 @@ const MapComponent = ({ searchCenter }) => {
     const [activeMarker, setActiveMarker] = useState(null);
     const [autocomplete, setAutocomplete] = useState(null);
     const [mapCenter, setMapCenter] = useState({ lat: 43.6532, lng: -79.3832 }); // default
+    const [radius, setRadius] = useState(null);
+
+
     const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
+    const getDistanceKm = (lat1, lng1, lat2, lng2) => {
+        const R = 6371; // Earth radius in km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLng = (lng2 - lng1) * Math.PI / 180;
+
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) *
+            Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // distance in km
+    }
+
+    const filteredMarkers = markerPositions.filter(marker => {
+        if (!radius || !mapCenter) return true;
+
+        const distance = getDistanceKm(
+            mapCenter.lat,
+            mapCenter.lng,
+            marker.lat,
+            marker.lng
+        );
+
+        return distance <= radius;
+    });
+
 
     //
     // 1. Fetch Google Maps API KEY
@@ -179,7 +211,7 @@ const MapComponent = ({ searchCenter }) => {
                         </Autocomplete>
 
                         {/* RADIUS SELECTOR COMPONENT */}
-                        <RadiusSelector />
+                        <RadiusSelector onChange={(km) => setRadius(km)}/>
                     </div>
                 </div>
 
@@ -192,7 +224,7 @@ const MapComponent = ({ searchCenter }) => {
                     zoom={searchCenter ? 10 : 4}
                 >
                     {/* MARKERS */}
-                    {markerPositions.map((marker) => (
+                    {filteredMarkers.map((marker) => (
                         <Marker
                             key={marker.id}
                             position={{ lat: marker.lat, lng: marker.lng }}
