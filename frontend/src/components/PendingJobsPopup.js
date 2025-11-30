@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 
 const overlayStyle = {
     position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100vw",
-    height: "100vh",
+    top: 0, left: 0,
+    width: "100vw", height: "100vh",
     background: "rgba(0,0,0,0.5)",
     display: "flex",
     justifyContent: "center",
@@ -39,60 +37,74 @@ const closeButtonStyle = {
     right: "10px",
     fontSize: "22px",
     background: "transparent",
-    color: "#333",
     border: "none",
+    cursor: "pointer"
+};
+
+const finishButtonStyle = {
+    marginTop: "8px",
+    padding: "8px 12px",
+    background: "#22c55e",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
     cursor: "pointer",
-    padding: "0px 6px",
-    transition: "0.2s"
+    fontSize: "14px",
+    fontWeight: "600"
 };
-
-const closeButtonHover = {
-    color: "#000"
-};
-
 
 const PendingJobsPopup = ({ delivererId, onClose }) => {
-    const [jobs, setJobs] = useState([]);
+    const [pendingJobs, setPendingJobs] = useState([]);
     const [completedJobs, setCompletedJobs] = useState([]);
 
     useEffect(() => {
         if (!delivererId) return;
 
+        // Load closed jobs (pending)
         fetch(`http://localhost:5000/api/deliverer/${delivererId}/pending`)
             .then((res) => res.json())
-            .then((data) => {
-                console.log("Pending jobs:", data);
-                setJobs(data);
-            })
-            .catch((err) => console.error("Error loading jobs:", err));
+            .then(setPendingJobs)
+            .catch(console.error);
 
-        fetch(`http://localhost:5000/api/deliverer/${delivererId}/complete`)
+        // Load completed jobs
+        fetch(`http://localhost:5000/api/deliverer/${delivererId}/completed`)
             .then((res) => res.json())
-            .then((data) => {
-                console.log("Completed jobs:", data);
-                setJobs(data);
-            })
-            .catch((err) => console.error("Error loading completed jobs:", err));
+            .then(setCompletedJobs)
+            .catch(console.error);
     }, [delivererId]);
+
+    const finishDelivery = async (deliveryId) => {
+        try {
+            await fetch(`http://localhost:5000/api/deliveries/${deliveryId}/complete`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" }
+            });
+
+            // Now REFRESH both lists from backend
+            const pending = await fetch(`http://localhost:5000/api/deliverer/${delivererId}/pending`).then(r => r.json());
+            const completed = await fetch(`http://localhost:5000/api/deliverer/${delivererId}/completed`).then(r => r.json());
+
+            setPendingJobs(pending);
+            setCompletedJobs(completed);
+
+        } catch (err) {
+            console.error("Error finishing delivery:", err);
+        }
+    };
+
 
     return (
         <div style={overlayStyle}>
             <div style={windowStyle}>
 
-                {/* Close button */}
-                <button
-                    onClick={onClose}
-                    style={closeButtonStyle}
-                >
-                    ×
-                </button>
+                <button onClick={onClose} style={closeButtonStyle}>×</button>
 
-                <h2>Your Current Jobs</h2>
+                <h2>Your Current Deliveries</h2>
 
-                {jobs.length === 0 ? (
+                {pendingJobs.length === 0 ? (
                     <p>No pending jobs.</p>
                 ) : (
-                    jobs.map(job => (
+                    pendingJobs.map(job => (
                         <div key={job.delivery_id} style={cardStyle}>
                             <h3>{job.item_description}</h3>
                             <p><strong>Purchaser:</strong> {job.Purchaser.first_name} {job.Purchaser.last_name}</p>
@@ -100,15 +112,19 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
                             <p><strong>Dropoff:</strong> {job.dropoff_address}</p>
                             <p><strong>Payment:</strong> ${job.proposed_payment}</p>
 
-                            <button>Finish Delivery</button> {/* Button to change status of delivery to completed*/}
+                            <button
+                                style={finishButtonStyle}
+                                onClick={() => finishDelivery(job.delivery_id)}
+                            >
+                                Finish Delivery
+                            </button>
                         </div>
-                       
                     ))
                 )}
 
-                <hr></hr>
+                <hr />
 
-                <h2>Your Completed Jobs</h2>
+                <h2>Completed Deliveries</h2>
 
                 {completedJobs.length === 0 ? (
                     <p>No completed jobs.</p>
@@ -120,16 +136,13 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
                             <p><strong>Pickup:</strong> {job.pickup_address}</p>
                             <p><strong>Dropoff:</strong> {job.dropoff_address}</p>
                             <p><strong>Payment:</strong> ${job.proposed_payment}</p>
-
-                            <button>Finish Delivery</button> {/* Button to change status of delivery to completed*/}
                         </div>
-                       
                     ))
                 )}
+
             </div>
         </div>
     );
 };
 
 export default PendingJobsPopup;
-

@@ -10,7 +10,8 @@ router.get("/deliverer/:id/pending", async (req, res) => {
 
         const jobs = await Delivery.findAll({
             where: {
-                deliverer_id: delivererId
+                deliverer_id: delivererId,
+                status: "closed"
             },
             include: [
                 {
@@ -28,7 +29,24 @@ router.get("/deliverer/:id/pending", async (req, res) => {
     }
 });
 
-// Finish delivery
+// GET all completed jobs corresponding to a certain deliverers id
+router.get("/deliverer/:id/completed", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const jobs = await Delivery.findAll({
+            where: { deliverer_id: id, status: "completed" },
+            include: [{ model: User, as: "Purchaser", attributes: ["first_name", "last_name"] }]
+        });
+
+        res.json(jobs);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to load completed jobs" });
+    }
+});
+
+// change status of current jobs to complete for certain id's
 router.put("/deliveries/:id/complete", async (req, res) => {
     try {
         const { id } = req.params;
@@ -39,13 +57,18 @@ router.put("/deliveries/:id/complete", async (req, res) => {
             return res.status(404).json({ error: "Delivery not found" });
         }
 
-        delivery.status = "completed"; // or "completed" if you prefer
+        delivery.status = "completed"; // set status to completed
         await delivery.save();
 
-        res.json({ message: "Delivery marked as completed!" });
+        res.json({ 
+            message: "Delivery marked as completed!", 
+            delivery 
+        });
+
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Failed to complete delivery" });
     }
 });
+
 module.exports = router;
