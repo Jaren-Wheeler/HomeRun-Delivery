@@ -13,6 +13,9 @@ app.use(cors());
 const mapRoutes = require('./routes/mapRoutes');
 app.use("/api", mapRoutes);
 
+const deliveryRoutes = require('./routes/deliveryRoutes');
+app.use("/api", deliveryRoutes);
+
 app.get('/', (req,res) => {
     res.send('Server is running.')
 })

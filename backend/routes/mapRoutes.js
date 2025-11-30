@@ -18,7 +18,8 @@ router.get("/markers", async (req, res) => {
                 "item_description",
                 "proposed_payment",
                 "status",
-                "purchaser_id"
+                "purchaser_id",
+                "deliverer_id"
             ],
             include: [
                 {

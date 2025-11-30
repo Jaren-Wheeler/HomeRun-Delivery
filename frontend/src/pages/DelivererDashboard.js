@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import MapComponent from '../components/MapComponent';
-import DelivererOptions from '../components/DelivererOptions';
+import PendingJobsPopup from '../components/PendingJobsPopup';
 
 
 const DelivererDashboard = () => {
     const [autocomplete, setAutocomplete] = useState(null);
     const [searchCenter, setSearchCenter] = useState(null);
-    const [selectedRadius, setSelectedRadius] = useState(20); // default 20 km
+    const [showPendingJobs, setShowPendingJobs] = useState(false);
+
 
     const onLoad = (auto) => {
         setAutocomplete(auto);
@@ -32,15 +33,23 @@ const DelivererDashboard = () => {
                     <h2 style={{ textAlign: "center" }}>Find Jobs</h2>
 
                     <div style={{ display: 'flex', width: '100%', justifyContent: "space-between" }}>
-                        <div style={{ alignSelf: "flex-end", marginRight: '1rem' }}>
-                            <DelivererOptions />
+                        <div style={{display: 'flex', gap: '0.5rem'}}>
+                            <button onClick={() => setShowPendingJobs(true)}>Your Jobs</button>
+                            <button>Job Finder</button>
                         </div>
                     </div>
                 </div>
 
                 {/* Map Component */}
-                <MapComponent searchCenter={searchCenter} radius={selectedRadius} style={{ height: '90vh' }} />
+                <MapComponent searchCenter={searchCenter} style={{ height: '90vh' }} />
 
+                {/* Open Pending Jobs Component */}
+                {showPendingJobs && (
+                    <PendingJobsPopup
+                        delivererId={2}
+                        onClose={() => setShowPendingJobs(false)}
+                />
+)}
             </div>
 
     );
