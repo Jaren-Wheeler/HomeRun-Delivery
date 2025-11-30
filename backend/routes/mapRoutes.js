@@ -12,13 +12,16 @@ router.get("/maps-key", (req,res) => {
 router.get("/markers", async (req, res) => {
     try {
         const deliveries = await Delivery.findAll({
+            where: {status: "open"}, // only show markers for jobs that are available
+
             attributes: [
                 "delivery_id",
                 "pickup_address",
                 "item_description",
                 "proposed_payment",
                 "status",
-                "purchaser_id"
+                "purchaser_id",
+                "deliverer_id"
             ],
             include: [
                 {
