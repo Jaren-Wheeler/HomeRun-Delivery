@@ -28,4 +28,24 @@ router.get("/deliverer/:id/pending", async (req, res) => {
     }
 });
 
+// Finish delivery
+router.put("/deliveries/:id/complete", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const delivery = await Delivery.findByPk(id);
+
+        if (!delivery) {
+            return res.status(404).json({ error: "Delivery not found" });
+        }
+
+        delivery.status = "completed"; // or "completed" if you prefer
+        await delivery.save();
+
+        res.json({ message: "Delivery marked as completed!" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to complete delivery" });
+    }
+});
 module.exports = router;

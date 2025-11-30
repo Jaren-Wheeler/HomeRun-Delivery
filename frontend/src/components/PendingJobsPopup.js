@@ -53,6 +53,7 @@ const closeButtonHover = {
 
 const PendingJobsPopup = ({ delivererId, onClose }) => {
     const [jobs, setJobs] = useState([]);
+    const [completedJobs, setCompletedJobs] = useState([]);
 
     useEffect(() => {
         if (!delivererId) return;
@@ -64,6 +65,14 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
                 setJobs(data);
             })
             .catch((err) => console.error("Error loading jobs:", err));
+
+        fetch(`http://localhost:5000/api/deliverer/${delivererId}/complete`)
+            .then((res) => res.json())
+            .then((data) => {
+                console.log("Completed jobs:", data);
+                setJobs(data);
+            })
+            .catch((err) => console.error("Error loading completed jobs:", err));
     }, [delivererId]);
 
     return (
@@ -78,7 +87,7 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
                     ×
                 </button>
 
-                <h2>Your Accepted Jobs</h2>
+                <h2>Your Current Jobs</h2>
 
                 {jobs.length === 0 ? (
                     <p>No pending jobs.</p>
@@ -90,7 +99,31 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
                             <p><strong>Pickup:</strong> {job.pickup_address}</p>
                             <p><strong>Dropoff:</strong> {job.dropoff_address}</p>
                             <p><strong>Payment:</strong> ${job.proposed_payment}</p>
+
+                            <button>Finish Delivery</button> {/* Button to change status of delivery to completed*/}
                         </div>
+                       
+                    ))
+                )}
+
+                <hr></hr>
+
+                <h2>Your Completed Jobs</h2>
+
+                {completedJobs.length === 0 ? (
+                    <p>No completed jobs.</p>
+                ) : (
+                    completedJobs.map(job => (
+                        <div key={job.delivery_id} style={cardStyle}>
+                            <h3>{job.item_description}</h3>
+                            <p><strong>Purchaser:</strong> {job.Purchaser.first_name} {job.Purchaser.last_name}</p>
+                            <p><strong>Pickup:</strong> {job.pickup_address}</p>
+                            <p><strong>Dropoff:</strong> {job.dropoff_address}</p>
+                            <p><strong>Payment:</strong> ${job.proposed_payment}</p>
+
+                            <button>Finish Delivery</button> {/* Button to change status of delivery to completed*/}
+                        </div>
+                       
                     ))
                 )}
             </div>
