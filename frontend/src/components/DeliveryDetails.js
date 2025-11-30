@@ -3,31 +3,41 @@ import React from 'react';
 const DeliveryDetails = ({ delivery }) => {
     if (!delivery) return <div>Loading...</div>;
 
+    const purchaser = delivery.Purchaser;
+    const deliverer = delivery.Deliverer; // may be null
+
     return (
-        <div style={{ 
-            maxWidth: "240px", 
+        <div style={{
+            maxWidth: "240px",
             fontFamily: "Inter, sans-serif",
             display: "flex",
             flexDirection: "column"
         }}>
-            
+
             {/* Title */}
-            <h1 style={{ 
-                fontSize: "16px", 
+            <h1 style={{
+                fontSize: "16px",
                 fontWeight: "600",
                 marginBottom: "4px"
             }}>
                 {delivery.item_description}
             </h1>
 
-            {/* Seller Info */}
-            <p style={{ fontSize: "13px", marginBottom: "6px" }}>
-                Seller: {delivery.User.first_name} {delivery.User.last_name}
+            {/* Purchaser Info */}
+            <p style={{
+                fontSize: "13px",
+                marginBottom: "6px",
+                color: "#555"
+            }}>
+                Buyer:{" "}
+                {purchaser
+                    ? `${purchaser.first_name} ${purchaser.last_name}`
+                    : "Unknown Buyer"}
             </p>
 
             {/* Pickup address */}
-            <p style={{ 
-                fontSize: "13px", 
+            <p style={{
+                fontSize: "13px",
                 marginBottom: "6px",
                 color: "#555"
             }}>
@@ -35,15 +45,14 @@ const DeliveryDetails = ({ delivery }) => {
             </p>
 
             {/* Payment */}
-            <p style={{ 
-                fontSize: "13px", 
+            <p style={{
+                fontSize: "13px",
                 marginBottom: "10px",
                 color: "#555"
             }}>
                 Payment Offered: <strong>${delivery.proposed_payment}</strong>
             </p>
 
-            {/* Divider */}
             <div style={{
                 borderBottom: "1px solid #ddd",
                 margin: "8px 0"

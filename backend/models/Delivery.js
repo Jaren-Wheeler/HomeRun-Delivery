@@ -1,6 +1,6 @@
 const {DataTypes} = require("sequelize");
 const sequelize = require("../config/db");
-
+const  User = require("./User");
 
 const Delivery = sequelize.define("Delivery", {
     delivery_id: {
@@ -15,6 +15,14 @@ const Delivery = sequelize.define("Delivery", {
     dropoff_address: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    latitude: {
+    type: DataTypes.FLOAT,
+    allowNull: true
+    },
+    longitude: {
+        type: DataTypes.FLOAT,
+        allowNull: true
     },
     item_description: {
         type: DataTypes.STRING,
@@ -31,9 +39,16 @@ const Delivery = sequelize.define("Delivery", {
     createdAt: {
         type: DataTypes.DATE
     },
-    user_id: {
+    updatedAt: {
+        type: DataTypes.DATE
+    },
+    purchaser_id: {
         type: DataTypes.INTEGER,
         allowNull: false
+    },
+    deliverer_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
     }
 });
 

@@ -8,8 +8,24 @@ const Review = require('../models/Review.js');
 const Vehicle = require('../models/Vehicle.js');
 
 // handle one to many relationships
-Delivery.belongsTo(User, {foreignKey: "user_id"});
-User.hasMany(Delivery, {foreignKey: "user_id", onDelete: "CASCADE"});
+Delivery.belongsTo(User, {
+  as: "Purchaser",
+  foreignKey: "purchaser_id"
+});
+Delivery.belongsTo(User, {
+  as: "Deliverer",
+  foreignKey: "deliverer_id"
+});
+User.hasMany(Delivery, {
+  as: "Purchases",
+  foreignKey: "purchaser_id",
+  onDelete: "CASCADE"
+});
+User.hasMany(Delivery, {
+  as: "Deliveries",
+  foreignKey: "deliverer_id",
+  onDelete: "CASCADE"
+});
 
 Review.belongsTo(User, {foreignKey: "user_id"});
 User.hasMany(Review, {foreignKey: "user_id", onDelete: "CASCADE"});
@@ -46,6 +62,7 @@ async function initDB() {
     console.log("Tables created/updated!");
   } catch (err) {
     console.error("Database connection failed:", err);
+    throw err;
   }
 }
 
