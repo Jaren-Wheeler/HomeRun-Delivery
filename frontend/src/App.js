@@ -5,18 +5,17 @@ import DelivererDashboard from './pages/DelivererDashboard';
 import Homepage from './pages/Homepage';
 import Payment from './pages/Payment';
 import NavBar from './components/NavBar';
+
 function App() {
   return (
-  
     <Router>
-      <NavBar></NavBar>
+      <div style={{minHeight: "100vh", backgroundColor: "#F3F4F6"}}>
+        <NavBar />
 
-      <Routes>
-        {/*<Route path="/" element={<Homepage />} />*/}
-         {/*<Route path="/purchaser-dashboard" element={<PurchaserDashboard />} />*/}
-        <Route path="/deliverer-dashboard" element={<DelivererDashboard />} />
-         {/*<Route path="/payment" element={<Payment />} />*/}
-      </Routes>
+        <Routes>
+          <Route path="/deliverer-dashboard" element={<DelivererDashboard />} />
+        </Routes>
+      </div>
     </Router>
   );
 }
