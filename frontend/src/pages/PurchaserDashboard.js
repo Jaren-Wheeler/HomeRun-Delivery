@@ -3,7 +3,13 @@ import CreatePostingForm from "../components/CreatePostingForm";
 
 const PurchaserDashboard = () => {
     const [deliveries, setDeliveries] = useState([]);
+    const [filterStatus, setFilterStatus] = useState("all");
 
+    const filteredDeliveries = deliveries.filter((d) => {
+        if (filterStatus === "all") return true;
+        return d.status === filterStatus;
+    });
+  
     // Fetch deliveries from backend
     useEffect(() => {
         fetch(`http://localhost:5000/api/purchaser/${1}/pending`)
@@ -61,6 +67,27 @@ const PurchaserDashboard = () => {
                     Your Delivery Posts
                 </h2>
 
+                <div style={{ marginBottom: "1rem" }}>
+                    <label style={{ marginRight: "8px", fontWeight: "600" }}>
+                        Filter by status:
+                    </label>
+
+                    <select
+                        value={filterStatus}
+                        onChange={(e) => setFilterStatus(e.target.value)}
+                        style={{
+                            padding: "6px 10px",
+                            borderRadius: "6px",
+                            border: "1px solid #ccc",
+                            fontSize: "14px"
+                        }}
+                    >
+                        <option value="all">All</option>
+                        <option value="open">Open</option>
+                        <option value="closed">Completed</option>
+                    </select>
+                </div>
+
                 {deliveries.length === 0 ? (
                     <p>No deliveries yet.</p>
                 ) : (
@@ -82,7 +109,7 @@ const PurchaserDashboard = () => {
                         </thead>
 
                         <tbody>
-                            {deliveries.map((d) => (
+                            {filteredDeliveries.map((d) => (
                                 <tr key={d.delivery_id}>
                                     <td style={td}>{d.delivery_id}</td>
                                     <td style={td}>{d.pickup_address}</td>

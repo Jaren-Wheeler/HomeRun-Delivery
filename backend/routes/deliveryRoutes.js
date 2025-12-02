@@ -36,8 +36,8 @@ router.get("/purchaser/:id/pending", async (req, res) => {
 
         const jobs = await Delivery.findAll({
             where: {
-                purchaser_id: purchaserId,
-                status: "open"
+                purchaser_id: purchaserId
+               
             },
             include: [
                 {
