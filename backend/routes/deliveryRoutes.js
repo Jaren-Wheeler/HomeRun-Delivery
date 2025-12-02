@@ -29,6 +29,54 @@ router.get("/deliverer/:id/pending", async (req, res) => {
     }
 });
 
+// GET all open jobs assigned by purchaser
+router.get("/purchaser/:id/pending", async (req, res) => {
+    try {
+        const purchaserId = req.params.id;
+
+        const jobs = await Delivery.findAll({
+            where: {
+                purchaser_id: purchaserId,
+                status: "open"
+            },
+            include: [
+                {
+                    model: User,
+                    as: "Purchaser",
+                    attributes: ["first_name", "last_name"]
+                }
+            ]
+        });
+
+        res.json(jobs);
+    } catch (err) {
+        console.error("Error loading pending jobs:", err);
+        res.status(500).json({ error: "Failed to load jobs" });
+    }
+});
+
+// POST deliveries 
+router.post("/deliveries", async (req, res) => {
+    try {
+        const newDelivery = await Delivery.create({
+            pickup_address: req.body.pickup_address,
+            dropoff_address: req.body.dropoff_address,
+            latitude: req.body.latitude,       // null allowed
+            longitude: req.body.longitude,     // null allowed
+            item_description: req.body.item_description,
+            proposed_payment: req.body.proposed_payment,
+            status: req.body.status,
+            purchaser_id: req.body.purchaser_id,
+            deliverer_id: req.body.deliverer_id
+        });
+
+        res.status(201).json(newDelivery);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Failed to create delivery" });
+    }
+});
+
 // GET all completed jobs corresponding to a certain deliverers id
 router.get("/deliverer/:id/completed", async (req, res) => {
     try {
