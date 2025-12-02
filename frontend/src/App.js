@@ -13,6 +13,7 @@ function App() {
         <NavBar />
 
         <Routes>
+          <Route path="/purchaser-dashboard" element={<PurchaserDashboard />} />
           <Route path="/deliverer-dashboard" element={<DelivererDashboard />} />
         </Routes>
       </div>
