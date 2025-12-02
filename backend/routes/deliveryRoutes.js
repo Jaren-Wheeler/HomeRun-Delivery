@@ -94,6 +94,36 @@ router.get("/deliverer/:id/completed", async (req, res) => {
     }
 });
 
+// Accept a job and update the delivery table with deliverer ID and change status to closed
+router.put("/deliveries/:id/accept", async (req, res) => {
+    try {
+        const deliveryId = req.params.id;
+        const delivererId = req.body.deliverer_id;
+
+        if (!delivererId) {
+            return res.status(400).json({ error: "deliverer_id is required" });
+        }
+
+        const delivery = await Delivery.findByPk(deliveryId);
+
+        if (!delivery) {
+            return res.status(404).json({ error: "Delivery not found" });
+        }
+
+        // Update job
+        await delivery.update({
+            deliverer_id: delivererId,
+            status: "closed"
+        });
+
+        res.json({ message: "Job accepted", delivery });
+    } catch (err) {
+        console.error("Error accepting job:", err);
+        res.status(500).json({ error: "Failed to accept job" });
+    }
+});
+
+
 // change status of current jobs to complete for certain id's
 router.put("/deliveries/:id/complete", async (req, res) => {
     try {
