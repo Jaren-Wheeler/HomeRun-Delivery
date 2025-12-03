@@ -61,7 +61,48 @@ router.post("/", async (req, res) => {
         return res.status(400).json({ message: "Server Error"});
     }
 });
-    
+
+router.post("/login", async (req, res) => {
+    console.log("Incoming login:", req.body);
+
+    try {
+        const { email, password } = req.body;
+
+        // Validate incoming fields
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+
+        // Find user by email
+        const user = await User.findOne({ where: { email } });
+
+        if (!user) {
+            console.log("No user found with email:", email);
+            return res.status(400).json({ message: "Invalid email or password" });
+        }
+
+        // Compare passwords
+        const isMatch = await bcrypt.compare(password, user.passwordHash);
+
+        if (!isMatch) {
+            console.log("Incorrect password for:", email);
+            return res.status(400).json({ message: "Invalid email or password" });
+        }
+
+        // Remove passwordHash before returning user data
+        const { passwordHash, ...safeUser } = user.toJSON();
+
+        console.log("Login successful:", safeUser);
+        return res.status(200).json({
+            message: "Login successful",
+            user: safeUser
+        });
+
+    } catch (error) {
+        console.error("Login error:", error);
+        return res.status(500).json({ message: "Server Error" });
+    }
+});
 
 module.exports = router;
 
