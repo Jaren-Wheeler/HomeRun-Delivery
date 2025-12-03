@@ -18,57 +18,57 @@ Base URL (local development):
 
 ---
 
-## Authentication (`/account`)
+## Authentication (`/api/account`)
 
-| Method | Endpoint         | Description                 |
-| ------ | ---------------- | --------------------------- |
-| POST   | `/account`       | Register a new user         |
-| POST   | `/account/login` | Login and receive user info |
-
----
-
-## Map Services (`/maps`)
-
-| Method | Endpoint         | Description                                  |
-| ------ | ---------------- | -------------------------------------------- |
-| GET    | `/maps/maps-key` | Retrieve Google Maps API key (frontend-safe) |
-| GET    | `/maps/markers`  | Get open jobs formatted for map markers      |
+| Method | Endpoint             | Description                 |
+| ------ | -------------------- | --------------------------- |
+| POST   | `/api/account`       | Register a new user         |
+| POST   | `/api/account/login` | Login and receive user info |
 
 ---
 
-## Deliverer Endpoints (`/deliverer`)
+## Map Services (`/api/maps`)
 
-| Method | Endpoint                   | Description                        |
-| ------ | -------------------------- | ---------------------------------- |
-| GET    | `/deliverer/:id/pending`   | View open jobs available to accept |
-| GET    | `/deliverer/:id/completed` | View completed delivery history    |
-| PUT    | `/deliverer/:id/complete`  | Mark accepted job as completed     |
-| PUT    | `/deliverer/:id/accept`    | Accept a delivery job              |
+| Method | Endpoint             | Description                                  |
+| ------ | -------------------- | -------------------------------------------- |
+| GET    | `/api/maps/maps-key` | Retrieve Google Maps API key (frontend-safe) |
+| GET    | `/api/maps/markers`  | Get open jobs formatted for map markers      |
+
+---
+
+## Deliverer Endpoints (`/api/deliverer`)
+
+| Method | Endpoint                       | Description                        |
+| ------ | ------------------------------ | ---------------------------------- |
+| GET    | `/api/deliverer/:id/pending`   | View open jobs available to accept |
+| GET    | `/api/deliverer/:id/completed` | View completed delivery history    |
+| PUT    | `/api/deliverer/:id/complete`  | Mark accepted job as completed     |
+| PUT    | `/api/deliverer/:id/accept`    | Accept a delivery job              |
 
 _State transitions enforced_
 open → closed → completed
 
 ---
 
-## Purchaser Endpoints (`/purchaser`)
+## Purchaser Endpoints (`/api/purchaser`)
 
-| Method | Endpoint                 | Description                                       |
-| ------ | ------------------------ | ------------------------------------------------- |
-| GET    | `/purchaser/:id/pending` | View unclaimed delivery jobs created by purchaser |
-| POST   | `/purchaser`             | Create a new delivery job request                 |
+| Method | Endpoint                     | Description                                       |
+| ------ | ---------------------------- | ------------------------------------------------- |
+| GET    | `/api/purchaser/:id/pending` | View unclaimed delivery jobs created by purchaser |
+| POST   | `/api/purchaser`             | Create a new delivery job request                 |
 
 Purchaser-created deliveries start at:
 status: open
 
 ---
 
-## Payment Endpoints (`/payments`)
+## Payment Endpoints (`/api/payments`)
 
-| Method | Endpoint                              | Description                        |
-| ------ | ------------------------------------- | ---------------------------------- |
-| POST   | `/payments/create-intent/:deliveryId` | Authorize funds but do not charge  |
-| POST   | `/payments/capture/:paymentId`        | Capture funds after job completion |
-| POST   | `/payments/cancel/:paymentId`         | Cancel and release authorization   |
+| Method | Endpoint                                  | Description                        |
+| ------ | ----------------------------------------- | ---------------------------------- |
+| POST   | `/api/payments/create-intent/:deliveryId` | Authorize funds but do not charge  |
+| POST   | `/api/payments/capture/:paymentId`        | Capture funds after job completion |
+| POST   | `/api/payments/cancel/:paymentId`         | Cancel and release authorization   |
 
 ⚙ Powered by Stripe using:
 capture_method: manual
