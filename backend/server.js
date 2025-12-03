@@ -21,7 +21,7 @@ app.use(cors());
 
 // import routes
 const mapRoutes = require('./routes/mapRoutes');
-app.use("/api", mapRoutes);
+app.use("/api/maps", mapRoutes);
 
 const deliveryRoutes = require('./routes/deliveryRoutes');
 app.use("/api/deliveries", deliveryRoutes);

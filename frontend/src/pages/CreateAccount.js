@@ -46,7 +46,7 @@ export default function CreateAccount() {
             if (!response.ok) throw new Error(data.message || 'Failed to create account');
 
             alert("Account created successfully!");
-            window.location.href = '/login';
+            window.location.href = '/';
         } catch (error) {
             console.error("Error creating account:", error);
             alert(`Error: ${error.message}`);
