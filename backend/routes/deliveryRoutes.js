@@ -141,4 +141,52 @@ router.post("/purchaser", async (req, res) => {
     }
 });
 
+// UPDATE a delivery (pickup, dropoff, description, payment)
+router.put("/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const delivery = await Delivery.findByPk(id);
+        if (!delivery) {
+            return res.status(404).json({ error: "Delivery not found" });
+        }
+
+        // Only allow certain fields to be updated
+        const { pickup_address, dropoff_address, item_description, proposed_payment } = req.body;
+
+        await delivery.update({
+            pickup_address,
+            dropoff_address,
+            item_description,
+            proposed_payment
+        });
+
+        res.json({ message: "Delivery updated", delivery });
+
+    } catch (err) {
+        console.error("Error updating delivery:", err);
+        res.status(500).json({ error: "Failed to update delivery" });
+    }
+});
+
+// DELETE a delivery
+router.delete("/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const delivery = await Delivery.findByPk(id);
+        if (!delivery) {
+            return res.status(404).json({ error: "Delivery not found" });
+        }
+
+        await delivery.destroy();
+
+        res.json({ message: "Delivery deleted" });
+
+    } catch (err) {
+        console.error("Error deleting delivery:", err);
+        res.status(500).json({ error: "Failed to delete delivery" });
+    }
+});
+
 module.exports = router;
