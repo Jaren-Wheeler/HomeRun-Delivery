@@ -18,8 +18,7 @@
  */
 
 const stripe = require('../config/stripe');
-const Payment = require('../models/Payment');
-const Delivery = require('../models/Delivery');
+const { Delivery, Payment } = require('../models');
 
 const PaymentService = {
   /**
@@ -38,7 +37,7 @@ const PaymentService = {
     const intent = await stripe.paymentIntents.create({
       amount: amountInCents,
       currency: 'cad',
-      capture_method: 'manual', // ensures no charge is finalized yet
+      capture_method: 'manual',
       metadata: { deliveryId },
     });
 
@@ -46,8 +45,14 @@ const PaymentService = {
       deliveryId,
       amount: delivery.proposed_payment,
       stripePaymentIntentId: intent.id,
-      status: intent.status, // e.g. requires_capture
+      status: intent.status,
     });
+
+    // ensure association populated
+    await payment.reload({ include: { model: Delivery, as: 'delivery' } });
+
+    // update delivery lifecycle
+    await payment.delivery.update({ status: 'closed' });
 
     return { intent, payment };
   },

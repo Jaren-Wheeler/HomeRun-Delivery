@@ -10,7 +10,7 @@
  *    Controller → (Validation/HTTP) → Service → (Business logic / DB)
  */
 
-const DelivererService = require('../services/delivererService');
+const { DelivererService } = require('../services');
 
 const DelivererController = {
   /**

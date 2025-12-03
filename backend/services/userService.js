@@ -10,7 +10,7 @@
  */
 
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
+const { User } = require('../models');
 
 const UserService = {
   /**

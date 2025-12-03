@@ -11,8 +11,7 @@
 
 const express = require('express');
 const router = express.Router();
-const MapsController = require('../controllers/mapsController');
-const UserController = require('../controllers/UserController');
+const { MapsController } = require('../controllers');
 
 // ---------------------------------------------------------------------------
 // Google Maps API Support

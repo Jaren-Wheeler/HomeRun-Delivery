@@ -13,8 +13,7 @@
  * NOTE:
  *   Purchasers do not directly complete deliveries — that’s owned by deliverers.
  */
-
-const Delivery = require('../models/Delivery');
+const { Delivery } = require('../models');
 
 const PurchaserService = {
   /**

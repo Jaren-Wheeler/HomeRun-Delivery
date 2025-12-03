@@ -2,15 +2,20 @@
  * @file paymentRoutes.js
  * Routes managing the Stripe payment lifecycle for each delivery.
  *
- * Payment flow:
- *  1 create-intent → authorize funds when delivery is accepted
- *  2 capture       → finalize payment when job is done
- *  3 cancel        → release funds if job fails or is declined
+ * Payment flow lifecycle:
+ *  1) create-intent → authorize funds once the assigned deliverer accepts the job
+ *  2) capture       → finalize payment when the deliverer completes the job
+ *  3) cancel        → release funds if the delivery is canceled before completion
+ *
+ * All routes require:
+ *  - Authenticated user via JWT
+ *  - User must be the assigned deliverer for the delivery involved
  */
 
 const express = require('express');
 const router = express.Router();
-const PaymentController = require('../controllers/PaymentController');
+const { PaymentController } = require('../controllers');
+const { requireAuth, requireDeliverer } = require('../middleware');
 
 // ---------------------------------------------------------------------------
 // Payment Lifecycle Endpoints
@@ -18,20 +23,38 @@ const PaymentController = require('../controllers/PaymentController');
 
 /**
  * POST /create-intent/:deliveryId
- * Authorizes funds (manual capture) when a delivery is accepted.
+ * Authorizes funds when the assigned deliverer accepts the delivery.
+ * Automatically updates delivery.status → 'closed'.
  */
-router.post('/create-intent/:deliveryId', PaymentController.createIntent);
+router.post(
+  '/create-intent/:deliveryId',
+  requireAuth,
+  requireDeliverer,
+  PaymentController.createIntent
+);
 
 /**
  * POST /capture/:paymentId
- * Captures previously authorized funds once delivery is completed.
+ * Captures previously authorized funds after successful delivery completion.
+ * Automatically updates delivery.status → 'completed'.
  */
-router.post('/capture/:paymentId', PaymentController.capture);
+router.post(
+  '/capture/:paymentId',
+  requireAuth,
+  requireDeliverer,
+  PaymentController.capture
+);
 
 /**
  * POST /cancel/:paymentId
- * Cancels the authorization and releases held funds.
+ * Cancels the authorization and reopens the delivery for another driver.
+ * Automatically updates delivery.status → 'open'.
  */
-router.post('/cancel/:paymentId', PaymentController.cancel);
+router.post(
+  '/cancel/:paymentId',
+  requireAuth,
+  requireDeliverer,
+  PaymentController.cancel
+);
 
 module.exports = router;
