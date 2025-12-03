@@ -47,7 +47,7 @@ router.get("/deliverer/:id/completed", async (req, res) => {
 });
 
 // change status of current jobs to complete for certain id's
-router.put("/deliveries/:id/complete", async (req, res) => {
+router.put("/:id/complete", async (req, res) => {
     try {
         const { id } = req.params;
 
