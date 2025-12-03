@@ -10,9 +10,15 @@ const PurchaserDashboard = () => {
         return d.status === filterStatus;
     });
   
-    // Fetch deliveries from backend
+    // Fetch deliveries from backend corresponding to logged in purchaser
     useEffect(() => {
-        fetch(`http://localhost:5000/api/deliveries/purchaser/${1}/pending`)
+        const purchaserId = sessionStorage.getItem("user_id"); // fetch the currently logged in user
+
+        if (!purchaserId) {
+            console.error("No logged-in user id found in session storage");
+            return;
+        }
+        fetch(`http://localhost:5000/api/deliveries/purchaser/${purchaserId}/pending`)
             .then((res) => res.json())
             .then((data) => setDeliveries(data))
             .catch((err) => console.error("Error fetching deliveries:", err));

@@ -3,35 +3,44 @@ import React from 'react';
 const DeliveryDetails = ({ delivery }) => {
     if (!delivery) return <div>Loading...</div>;
 
-    const purchaser = delivery.Purchaser;
-    const deliverer = delivery.Deliverer; // may be null
+    const purchaser = delivery.Purchaser; // may be null
 
-    const acceptJob = async (deliveryId) => {
-    
-    const delivererId = deliverer.deliverer_id;
+    const acceptJob = async () => {
+        // 🔹 Use the currently logged in user as the deliverer
+        const delivererId = sessionStorage.getItem("user_id");
 
-    try {
-        const response = await fetch(
-            `http://localhost:5000/api/deliveries/purchaser/${deliveryId}/accept`,
-            {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ deliverer_id: delivererId })
-            }
-        );
-
-        if (!response.ok) {
-            alert("Failed to accept job");
+        if (!delivererId) {
+            alert("You must be logged in as a deliverer to accept a job.");
             return;
         }
 
-        alert("Job accepted!");
+        try {
+            const response = await fetch(
+                `http://localhost:5000/api/deliveries/purchaser/${delivery.delivery_id}/accept`,
+                {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ deliverer_id: Number(delivererId) })
+                }
+            );
 
-    } catch (err) {
-        console.error("Error:", err);
-        alert("Server error");
-    }
-};
+            if (!response.ok) {
+                const errText = await response.text();
+                console.error("Accept job error:", errText);
+                alert("Failed to accept job");
+                return;
+            }
+
+            alert("Job accepted!");
+
+            // Later you can call a prop like onAccept(delivery.delivery_id)
+            // to remove it from UI.
+
+        } catch (err) {
+            console.error("Error:", err);
+            alert("Server error");
+        }
+    };
 
     return (
         <div style={{
@@ -40,8 +49,6 @@ const DeliveryDetails = ({ delivery }) => {
             display: "flex",
             flexDirection: "column"
         }}>
-
-            {/* Title */}
             <h1 style={{
                 fontSize: "16px",
                 fontWeight: "600",
@@ -50,7 +57,6 @@ const DeliveryDetails = ({ delivery }) => {
                 {delivery.item_description}
             </h1>
 
-            {/* Purchaser Info */}
             <p style={{
                 fontSize: "13px",
                 marginBottom: "6px",
@@ -62,7 +68,6 @@ const DeliveryDetails = ({ delivery }) => {
                     : "Unknown Buyer"}
             </p>
 
-            {/* Pickup address */}
             <p style={{
                 fontSize: "13px",
                 marginBottom: "6px",
@@ -71,7 +76,6 @@ const DeliveryDetails = ({ delivery }) => {
                 Pickup: {delivery.pickup_address}
             </p>
 
-            {/* Payment */}
             <p style={{
                 fontSize: "13px",
                 marginBottom: "10px",
@@ -85,7 +89,6 @@ const DeliveryDetails = ({ delivery }) => {
                 margin: "8px 0"
             }}></div>
 
-            {/* Button aligned bottom right */}
             <div style={{ display: "flex", justifyContent: "flex-end" }}>
                 <button
                     style={{
@@ -101,7 +104,7 @@ const DeliveryDetails = ({ delivery }) => {
                     }}
                     onMouseEnter={(e) => (e.target.style.backgroundColor = "#16a34a")}
                     onMouseLeave={(e) => (e.target.style.backgroundColor = "#22c55e")}
-                    onClick={() => acceptJob(delivery.delivery_id)}
+                    onClick={acceptJob}
                 >
                     Accept Job
                 </button>
