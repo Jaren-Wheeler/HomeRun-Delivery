@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import CreatePostingForm from "../components/CreatePostingForm";
+import RateDeliveryPopup from "../components/RateDeliveryPopup";
 
 const PurchaserDashboard = () => {
     const [deliveries, setDeliveries] = useState([]);
     const [filterStatus, setFilterStatus] = useState("all");
+    const [selectedDelivery, setSelectedDelivery] = useState(null);
 
     const filteredDeliveries = deliveries.filter((d) => {
         if (filterStatus === "all") return true;
@@ -116,7 +118,10 @@ const PurchaserDashboard = () => {
 
                         <tbody>
                             {filteredDeliveries.map((d) => (
-                                <tr key={d.delivery_id}>
+                                <tr key={d.delivery_id}
+                                    onClick={() => setSelectedDelivery(d)}
+                                    style={{cursor: 'pointer'}}
+                                >
                                     <td style={td}>{d.delivery_id}</td>
                                     <td style={td}>{d.pickup_address}</td>
                                     <td style={td}>{d.dropoff_address}</td>
@@ -129,6 +134,15 @@ const PurchaserDashboard = () => {
                     </table>
                 )}
             </section>
+
+            {/*Display the popup for either editing an open delivery or rating a completed one*/}
+            {selectedDelivery && (
+                <RateDeliveryPopup
+                    delivery={selectedDelivery}
+                    onClose={() => setSelectedDelivery(null)}
+                />
+            )}
+
         </div>
     );
 };
