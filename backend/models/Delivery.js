@@ -1,55 +1,81 @@
-const {DataTypes} = require("sequelize");
-const sequelize = require("../config/db");
-const  User = require("./User");
+/**
+ * @file Delivery.js
+ * Sequelize model representing a delivery job posted by a purchaser.
+ *
+ * Tracks required pickup/dropoff info, pricing, geolocation,
+ * and the user IDs linked to each role (purchaser, deliverer).
+ */
 
-const Delivery = sequelize.define("Delivery", {
-    delivery_id: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/db');
+
+const Delivery = sequelize.define(
+  'Delivery',
+  {
+    deliveryId: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+      field: 'delivery_id', // Keeps column name backwards compatible
     },
-    pickup_address: {
-        type: DataTypes.STRING,
-        allowNull: false
+
+    // Where the item starts and ends
+    pickupAddress: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      field: 'pickup_address',
     },
-    dropoff_address: {
-        type: DataTypes.STRING,
-        allowNull: false
+    dropoffAddress: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      field: 'dropoff_address',
     },
-    latitude: {
-    type: DataTypes.FLOAT,
-    allowNull: true
+
+    // geolocation for map markers
+    latitude: { type: DataTypes.FLOAT, allowNull: true },
+    longitude: { type: DataTypes.FLOAT, allowNull: true },
+
+    // Information about item and cost
+    itemDescription: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      field: 'item_description',
     },
-    longitude: {
-        type: DataTypes.FLOAT,
-        allowNull: true
+    proposedPayment: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      field: 'proposed_payment',
     },
-    item_description: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    proposed_payment: {
-        type: DataTypes.DECIMAL,
-        allowNull: false
-    },
+
+    /**
+     * Job lifecycle:
+     * - "open"     : awaiting a driver
+     * - "closed"   : assigned + waiting for completion
+     * - "completed": finished job, ready for payment capture
+     */
     status: {
-        type: DataTypes.STRING,
-        allowNull: false
+      type: DataTypes.ENUM('open', 'closed', 'completed'),
+      allowNull: false,
+      defaultValue: 'open',
     },
-    createdAt: {
-        type: DataTypes.DATE
+
+    // Foreign keys: linked in associations.js
+    purchaserId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: 'purchaser_id',
     },
-    updatedAt: {
-        type: DataTypes.DATE
+    delivererId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      field: 'deliverer_id',
     },
-    purchaser_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    deliverer_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-    }
-});
+  },
+  {
+    tableName: 'Deliveries',
+    timestamps: true, // createdAt + updatedAt managed automatically
+    underscored: true, // ensures DB column naming consistency
+  }
+);
 
 module.exports = Delivery;
