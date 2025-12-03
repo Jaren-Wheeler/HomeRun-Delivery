@@ -23,3 +23,13 @@ Thumbs.db
 .vscode/
 dist/
 build/
+
+# Local database
+backend/database.sqlite
+
+# Env configuration
+backend/.env
+
+# Sequelize artifacts
+backend/*.db
+backend/*.sqlite*

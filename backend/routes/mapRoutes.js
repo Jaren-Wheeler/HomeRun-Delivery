@@ -1,71 +1,33 @@
+/**
+ * @file mapsRoutes.js
+ * Endpoints supporting Google Maps integration and lightweight user onboarding
+ * from the map view.
+ *
+ * Responsibilities:
+ *  - Provide client with the API key to load Google Maps
+ *  - Retrieve available delivery job marker data
+ *  - Create a basic user account directly from the interactive map
+ */
 
 const express = require('express');
 const router = express.Router();
-const Delivery = require("../models/Delivery");
-const User = require("../models/User")
-const bcrypt = require('bcryptjs');
+const MapsController = require('../controllers/mapsController');
+const UserController = require('../controllers/UserController');
 
-router.get("/maps-key", (req,res) => {
-    res.json({key: process.env.GOOGLE_MAPS_API_KEY});
-});
+// ---------------------------------------------------------------------------
+// Google Maps API Support
+// ---------------------------------------------------------------------------
 
-// GET markers (deliveries)
-router.get("/markers", async (req, res) => {
-    try {
-        const deliveries = await Delivery.findAll({
-            where: {status: "open"}, // only show markers for jobs that are available
+/**
+ * GET /maps-key
+ * Returns frontend-safe Google Maps API key for loading the map UI.
+ */
+router.get('/maps-key', MapsController.getMapsKey);
 
-            attributes: [
-                "delivery_id",
-                "pickup_address",
-                "item_description",
-                "proposed_payment",
-                "status",
-                "purchaser_id",
-                "deliverer_id"
-            ],
-            include: [
-                {
-                    model: User, 
-                    as: "Purchaser",
-                    attributes: ["first_name", "last_name"]
-                }
-            ]
-        });
-        console.log(JSON.stringify(deliveries, null, 2));  
-        res.json(deliveries);
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to load markers" });
-    }
-});
+/**
+ * GET /markers
+ * Retrieves all "open" deliveries and maps them into markers for the UI.
+ */
+router.get('/markers', MapsController.getMarkers);
 
-router.post("/users", async (req, res) => {
-    try {
-        const { firstName, lastName, email, phone, role, password } = req.body;
-
-        if (!firstName || !lastName || !email || !phone || !password) {
-            return res.status(400).json({ error: "All fields are required" });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const newUser = await User.create({
-            first_name: firstName,
-            last_name: lastName,
-            email,
-            phone,
-            role: role ? "deliverer" : "purchaser",
-            password: hashedPassword,
-            isVerified: false,
-            createdAt: new Date(),
-            updatedAt: new Date()
-        });
-
-        res.status(201).json({ message: "User created successfully", userId: newUser.user_id });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Failed to create user" });
-    }
-});
 module.exports = router;

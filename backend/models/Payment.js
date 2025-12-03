@@ -1,52 +1,80 @@
 /**
- * @file Payment model definition.
+ * @file Payment.js
+ * Tracks Stripe PaymentIntent lifecycle for a delivery.
  *
- * Represents Stripe-backed payment records linked to deliveries.
- * Stores transaction state, reference IDs, and financial amounts
- * required for authorization and capture flow.
+ * A Payment:
+ * - is created when a driver accepts a job (authorization)
+ * - is captured when delivery completes
+ * - can be canceled if job fails/driver backs out
  */
 
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
 
-/**
- * Payment Schema
- *
- * @property {number} payment_id - Primary key, auto-increment identifier
- * @property {number} amount - Authorized amount for the delivery charge
- * @property {string} status - Stripe PaymentIntent status at last update
- * @property {string} stripePaymentIntentId - Secure reference to Stripe transaction
- * @property {Date|null} capturedAt - Timestamp when payment is fully captured
- * @property {number} deliveryId - Foreign key reference to Delivery
- */
-const Payment = sequelize.define('Payment', {
-  payment_id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
+const Payment = sequelize.define(
+  'Payment',
+  {
+    paymentId: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+      field: 'payment_id',
+    },
+
+    // Amount stored in CAD
+    amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      comment: 'Authorized payment amount in CAD',
+    },
+
+    /**
+     * Payment status matches Stripe intent states:
+     * - requires_payment_method: created but card not added
+     * - requires_capture: driver finished job but not billed yet
+     * - succeeded: payment fully completed
+     * - canceled: voided/refunded
+     */
+    status: {
+      type: DataTypes.ENUM(
+        'requires_payment_method',
+        'requires_confirmation',
+        'requires_capture',
+        'processing',
+        'succeeded',
+        'canceled'
+      ),
+
+      allowNull: false,
+      defaultValue: 'requires_payment_method',
+    },
+
+    // Stripe reference to sync local state with Stripe dashboard
+    stripePaymentIntentId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      field: 'stripe_payment_intent_id',
+    },
+
+    // Set when payment actually goes through
+    capturedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: 'Timestamp when capture succeeds',
+    },
+
+    deliveryId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: 'delivery_id',
+    },
   },
-  amount: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-  },
-  status: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    defaultValue: 'requires_payment_method', // Stripe initial state
-  },
-  stripePaymentIntentId: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true, // Maps to Stripe for tracking
-  },
-  capturedAt: {
-    type: DataTypes.DATE,
-    allowNull: true, // Null until full capture succeeds
-  },
-  deliveryId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-});
+  {
+    tableName: 'Payments',
+    timestamps: true, // createdAt + updatedAt automatically handled
+    underscored: true,
+  }
+);
 
 module.exports = Payment;

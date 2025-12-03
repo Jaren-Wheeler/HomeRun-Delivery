@@ -1,52 +1,61 @@
-const express = require('express');
-const app = express();
-const cors = require('cors');
-
-app.use((req, res, next) => {
-  console.log(`👉 ${req.method} ${req.url}`);
-  next();
-});
+/**
+ * @file server.js
+ * Entry point for the HomeRun Delivery backend API.
+ *
+ * Responsibilities:
+ * - Load environment variables
+ * - Initialize database and associations
+ * - Configure global middleware
+ * - Register feature routes
+ * - Start Express server once DB is initialized
+ */
 
 require('dotenv').config();
 
-const db = require("./config/db"); // initialize the database
-const initDb = require("./config/dbSync");
+const express = require('express');
+const cors = require('cors');
+const app = express();
 
+const initDb = require('./config/dbSync'); // schema sync + associations
 const PORT = process.env.PORT || 5000;
 
+// ---------------------------------------------------------------------------
+// Global middleware
+// ---------------------------------------------------------------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
+// Helpful request logging (great during development)
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.originalUrl}`);
+  next();
+});
 
-// import routes
-const mapRoutes = require('./routes/mapRoutes');
-app.use("/api/maps", mapRoutes);
+// ---------------------------------------------------------------------------
+// Route mounting
+// ---------------------------------------------------------------------------
+app.use('/api/maps', require('./routes/mapRoutes'));
+app.use('/api/deliverer', require('./routes/delivererRoutes'));
+app.use('/api/purchaser', require('./routes/purchaserRoutes'));
+app.use('/api/account', require('./routes/userRoutes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
 
-const deliveryRoutes = require('./routes/deliveryRoutes');
-app.use("/api/deliveries", deliveryRoutes);
+// ---------------------------------------------------------------------------
+// Server + Database initialization sequence
+// ---------------------------------------------------------------------------
+async function startServer() {
+  try {
+    await initDb(); // sync models & ensure relationships are registered
 
-const userRoutes = require('./routes/userRoutes');
-app.use("/api/account", userRoutes);
+    app.listen(PORT, () => {
+      console.log(`Server running at http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('❌ Failed to initialize database:', err.message);
+    process.exit(1); // crash on boot failure
+  }
+}
 
-// starts the server, initializes the database
-const startServer = async () => {
-    try {
-        await initDb(); // asyncronously create/update the database tables when starting the server
-        app.listen(PORT, () => {
-            console.log(`Server running at http://localhost:${PORT}`);
-        });
-    } catch (error) {
-        console.error("Failed to initialize database", error)
-    };
-};
-
-const sequelize = require("./config/db");
-
-sequelize.authenticate()
-  .then(() => console.log("✅ SQL Server connected"))
-  .catch(err => console.error("❌ Connection failed:", err));
-
-
-  
+// Boot
 startServer();
