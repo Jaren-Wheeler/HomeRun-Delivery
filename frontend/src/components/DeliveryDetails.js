@@ -6,6 +6,33 @@ const DeliveryDetails = ({ delivery }) => {
     const purchaser = delivery.Purchaser;
     const deliverer = delivery.Deliverer; // may be null
 
+    const acceptJob = async (deliveryId) => {
+    
+    const delivererId = deliverer.deliverer_id;
+
+    try {
+        const response = await fetch(
+            `http://localhost:5000/api/deliveries/purchaser/${deliveryId}/accept`,
+            {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ deliverer_id: delivererId })
+            }
+        );
+
+        if (!response.ok) {
+            alert("Failed to accept job");
+            return;
+        }
+
+        alert("Job accepted!");
+
+    } catch (err) {
+        console.error("Error:", err);
+        alert("Server error");
+    }
+};
+
     return (
         <div style={{
             maxWidth: "240px",
@@ -74,7 +101,7 @@ const DeliveryDetails = ({ delivery }) => {
                     }}
                     onMouseEnter={(e) => (e.target.style.backgroundColor = "#16a34a")}
                     onMouseLeave={(e) => (e.target.style.backgroundColor = "#22c55e")}
-                    onClick={() => console.log("Accepting job:", delivery.delivery_id)}
+                    onClick={() => acceptJob(delivery.delivery_id)}
                 >
                     Accept Job
                 </button>
