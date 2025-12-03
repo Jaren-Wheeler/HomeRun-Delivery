@@ -71,4 +71,74 @@ router.put("/:id/complete", async (req, res) => {
     }
 });
 
+router.put("/purchaser/:id/accept", async (req, res) => {
+    try {
+        const deliveryId = req.params.id;
+        const delivererId = req.body.deliverer_id;
+
+        const delivery = await Delivery.findByPk(deliveryId);
+        if (!delivery) {
+            return res.status(404).json({ error: "Delivery not found" });
+        }
+
+        await delivery.update({
+            deliverer_id: delivererId,
+            status: "closed"
+        });
+
+        res.json({ message: "Job accepted", delivery });
+
+    } catch (err) {
+        console.error("Error accepting job:", err);
+        res.status(500).json({ error: "Failed to accept job" });
+    }
+});
+
+// get jobs corresponding to certain purchasers
+router.get("/purchaser/:id/pending", async (req, res) => {
+    try {
+        const purchaserId = req.params.id;
+
+        const jobs = await Delivery.findAll({
+            where: {
+                purchaser_id: purchaserId   // NO STATUS FILTER HERE
+            },
+            include: [
+                {
+                    model: User,
+                    as: "Purchaser",
+                    attributes: ["first_name", "last_name"]
+                }
+            ]
+        });
+
+        res.json(jobs);
+
+    } catch (err) {
+        console.error("Error loading pending jobs:", err);
+        res.status(500).json({ error: "Failed to load jobs" });
+    }
+});
+
+router.post("/purchaser", async (req, res) => {
+    try {
+        const newDelivery = await Delivery.create({
+            pickup_address: req.body.pickup_address,
+            dropoff_address: req.body.dropoff_address,
+            latitude: req.body.latitude || null,
+            longitude: req.body.longitude || null,
+            item_description: req.body.item_description,
+            proposed_payment: req.body.proposed_payment,
+            status: "open",
+            purchaser_id: req.body.purchaser_id,
+            deliverer_id: null
+        });
+
+        res.status(201).json(newDelivery);
+    } catch (err) {
+        console.error("Error creating delivery:", err);
+        res.status(500).json({ error: "Failed to create delivery" });
+    }
+});
+
 module.exports = router;

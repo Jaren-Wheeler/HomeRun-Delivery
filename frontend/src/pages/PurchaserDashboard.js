@@ -12,7 +12,7 @@ const PurchaserDashboard = () => {
   
     // Fetch deliveries from backend
     useEffect(() => {
-        fetch(`http://localhost:5000/api/purchaser/${1}/pending`)
+        fetch(`http://localhost:5000/api/deliveries/purchaser/${1}/pending`)
             .then((res) => res.json())
             .then((data) => setDeliveries(data))
             .catch((err) => console.error("Error fetching deliveries:", err));

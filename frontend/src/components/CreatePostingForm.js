@@ -68,7 +68,7 @@ const CreatePostingForm = () => {
         };
 
         try {
-            const response = await fetch("http://localhost:5000/api/deliveries", {
+            const response = await fetch("http://localhost:5000/api/deliveries/purchaser", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(deliveryData)
