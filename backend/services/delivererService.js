@@ -20,9 +20,9 @@ const DelivererService = {
    * Finds all jobs currently `open` and without a deliverer assigned.
    * Driver can claim any of these jobs.
    */
-  async getDelivererPendingJobs() {
+  async getDelivererPendingJobs(delivererId) {
     return Delivery.findAll({
-      where: { status: 'open', deliverer_id: null },
+      where: { delivererId: delivererId, status: 'closed' },
       include: [
         {
           model: User,
@@ -39,7 +39,7 @@ const DelivererService = {
    */
   async getDelivererCompletedJobs(delivererId) {
     return Delivery.findAll({
-      where: { deliverer_id: delivererId, status: 'completed' },
+      where: { delivererId: delivererId, status: 'completed' },
       include: [
         {
           model: User,
@@ -81,7 +81,7 @@ const DelivererService = {
     }
 
     await delivery.update({
-      deliverer_id: delivererId,
+      delivererId: delivererId,
       status: 'closed',
     });
 
