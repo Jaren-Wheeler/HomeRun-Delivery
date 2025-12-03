@@ -57,9 +57,9 @@ export default function Login() {
             alert("Login successful!");
 
             // ⬅️ redirect – tweak these paths to match your routes
-            if (role === "purchaser") {
+            if (role === "Purchaser") {
                 window.location.href = "/purchaser-dashboard";
-            } else if (role === "deliverer") {
+            } else if (role === "Deliverer") {
                 window.location.href = "/deliverer-dashboard";
             } else {
                 window.location.href = "/home";

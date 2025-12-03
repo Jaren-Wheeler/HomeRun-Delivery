@@ -9,8 +9,19 @@
  *   - does NOT modify schema
  */
 
+/**
+ * Initializes and syncs database schema.
+ */
+
 const sequelize = require('./db.js');
-require('../models/associations'); // <– IMPORTANT: central association definitions only
+
+// 1️⃣ Load ALL models
+const User = require('../models/User');
+const Delivery = require('../models/Delivery');
+const Payment = require('../models/Payment');
+
+// 2️⃣ THEN load associations (applies to THESE model instances)
+require('../models/associations');
 
 async function initDB() {
   const isProduction = process.env.NODE_ENV === 'production';
@@ -19,17 +30,15 @@ async function initDB() {
     await sequelize.authenticate();
     console.log('🔌 DB connection established');
 
+    // 3️⃣ Sync AFTER associations are loaded
     await sequelize.sync({
-      alter: !isProduction, // auto-update tables only in dev
-      force: false, // never drop tables automatically
+      alter: !isProduction,
+      force: false
     });
 
     console.log('🗄️ Database synchronized successfully');
   } catch (err) {
     console.error('❌ Database initialization failed:', err);
-    if (err.errors) {
-      err.errors.forEach((e) => console.error(` - ${e.message} (${e.path})`));
-    }
     throw err;
   }
 }
