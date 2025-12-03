@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import CreatePostingForm from "../components/CreatePostingForm";
 import RateDeliveryPopup from "../components/RateDeliveryPopup";
+import ManageDeliveryPopup from "../components/ManageDeliveryPopup";
 
 const PurchaserDashboard = () => {
     const [deliveries, setDeliveries] = useState([]);
@@ -11,7 +12,32 @@ const PurchaserDashboard = () => {
         if (filterStatus === "all") return true;
         return d.status === filterStatus;
     });
-  
+    
+    const handleDelete = async (id) => {
+        await fetch(`http://localhost:5000/api/deliveries/${id}`, { method: "DELETE" });
+        setDeliveries(prev => prev.filter(d => d.delivery_id !== id));
+        setSelectedDelivery(null);
+    };
+
+    const handleUpdate = async (id, data) => {
+        await fetch(`http://localhost:5000/api/deliveries/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        });
+        setSelectedDelivery(null);
+        // Re-fetch deliveries or update in-place
+    };
+
+    const handleRating = async (id, stars) => {
+        await fetch(`http://localhost:5000/api/deliveries/${id}/rate`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ rating: stars })
+        });
+        setSelectedDelivery(null);
+    };
+
     // Fetch deliveries from backend corresponding to logged in purchaser
     useEffect(() => {
         const purchaserId = sessionStorage.getItem("user_id"); // fetch the currently logged in user
@@ -135,11 +161,20 @@ const PurchaserDashboard = () => {
                 )}
             </section>
 
-            {/*Display the popup for either editing an open delivery or rating a completed one*/}
-            {selectedDelivery && (
+            {selectedDelivery && selectedDelivery.status === "completed" && (
                 <RateDeliveryPopup
                     delivery={selectedDelivery}
                     onClose={() => setSelectedDelivery(null)}
+                    onRate={(stars) => handleRating(selectedDelivery.delivery_id, stars)}
+                />
+            )}
+
+            {selectedDelivery && selectedDelivery.status === "open" && (
+                <ManageDeliveryPopup
+                    delivery={selectedDelivery}
+                    onClose={() => setSelectedDelivery(null)}
+                    onSave={(updatedData) => handleUpdate(selectedDelivery.delivery_id, updatedData)}
+                    onDelete={() => handleDelete(selectedDelivery.delivery_id)}
                 />
             )}
 
