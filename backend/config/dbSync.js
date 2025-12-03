@@ -32,7 +32,7 @@ async function initDB() {
 
     // 3️⃣ Sync AFTER associations are loaded
     await sequelize.sync({
-      alter: !isProduction,
+      alter: false,
       force: false
     });
 

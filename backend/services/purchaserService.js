@@ -62,7 +62,17 @@ const PurchaserService = {
 
     return result[0] > 0; // returns true if something was updated
     
-}
+  },
+
+  async deleteDelivery(id) {
+      const deleted = await Delivery.destroy({
+          where: { deliveryId: id }
+      });
+
+      return deleted > 0; // true if a row was deleted
+  }
+
+
 };
 
 
