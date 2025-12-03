@@ -45,6 +45,26 @@ const PurchaserController = {
       res.status(500).json({ error: 'Failed to create delivery' });
     }
   },
+
+  async updateExistingJobs(req,res) {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+
+        const success = await PurchaserService.updateDelivery(id, updateData);
+
+        if (!success) {
+            return res.status(404).json({ error: "Delivery not found" });
+        }
+
+        return res.json({ message: "Delivery updated successfully" });
+
+    } catch (error) {
+        console.error("Error updating delivery:", error);
+        res.status(500).json({ error: "Failed to update delivery" });
+    }
+  }
 };
+
 
 module.exports = PurchaserController;

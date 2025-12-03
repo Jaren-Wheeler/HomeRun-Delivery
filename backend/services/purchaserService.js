@@ -52,8 +52,18 @@ const PurchaserService = {
       delivererId: null, // no driver yet
       status: 'open',
     });
-  }
+  },
 
+
+  async updateDelivery(id, updateData) {
+    const result = await Delivery.update(updateData, {
+        where: { deliveryId: id }
+    });
+
+    return result[0] > 0; // returns true if something was updated
+    
+}
 };
+
 
 module.exports = PurchaserService;

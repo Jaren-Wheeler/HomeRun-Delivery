@@ -20,7 +20,7 @@ const PurchaserDashboard = () => {
     };
 
     const handleUpdate = async (id, data) => {
-        await fetch(`http://localhost:5000/api/deliveries/${id}`, {
+        await fetch(`http://localhost:5000/api/purchaser/${id}/update`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
@@ -179,7 +179,7 @@ const PurchaserDashboard = () => {
                 <RateDeliveryPopup
                     delivery={selectedDelivery}
                     onClose={() => setSelectedDelivery(null)}
-                    onRate={(stars) => handleRating(selectedDelivery.delivery_id, stars)}
+                    onRate={(stars) => handleRating(selectedDelivery.deliveryId, stars)}
                 />
             )}
 
@@ -187,8 +187,8 @@ const PurchaserDashboard = () => {
                 <ManageDeliveryPopup
                     delivery={selectedDelivery}
                     onClose={() => setSelectedDelivery(null)}
-                    onSave={(updatedData) => handleUpdate(selectedDelivery.delivery_id, updatedData)}
-                    onDelete={() => handleDelete(selectedDelivery.delivery_id)}
+                    onSave={(updatedData) => handleUpdate(selectedDelivery.deliveryId, updatedData)}
+                    onDelete={() => handleDelete(selectedDelivery.deliveryId)}
                 />
             )}
 

@@ -74,7 +74,7 @@ const Delivery = sequelize.define(
   {
     tableName: 'Deliveries',
     timestamps: true, // createdAt + updatedAt managed automatically
-    underscored: true, // ensures DB column naming consistency
+    //underscored: true, // ensures DB column naming consistency
   }
 );
 

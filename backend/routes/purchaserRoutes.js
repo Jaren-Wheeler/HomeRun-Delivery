@@ -28,4 +28,5 @@ router.get('/:id/pending', PurchaserController.getPurchaserPendingJobs);
  */
 router.post('/', PurchaserController.createDelivery);
 
+router.put('/:id/update', PurchaserController.updateExistingJobs);
 module.exports = router;
