@@ -12,7 +12,7 @@
 
 const express = require('express');
 const router = express.Router();
-const PurchaserController = require('../controllers/PurchaserController');
+const { PurchaserController } = require('../controllers');
 
 /**
  * GET /api/purchaser/:id/pending

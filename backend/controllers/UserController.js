@@ -8,7 +8,7 @@
  *  - Delegate core business logic to UserService
  */
 
-const UserService = require('../services/userService');
+const { UserService } = require('../services');
 
 const UserController = {
   /**

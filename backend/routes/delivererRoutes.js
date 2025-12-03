@@ -14,7 +14,7 @@
 
 const express = require('express');
 const router = express.Router();
-const DelivererController = require('../controllers/DelivererController');
+const { DelivererController } = require('../controllers');
 
 /**
  * GET /api/deliverer/:id/pending

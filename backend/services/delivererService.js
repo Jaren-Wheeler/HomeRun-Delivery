@@ -12,8 +12,7 @@
  *   Service → (Business rules + DB logic) → Sequelize Models
  */
 
-const Delivery = require('../models/Delivery');
-const User = require('../models/User');
+const { Delivery, User } = require('../models');
 
 const DelivererService = {
   /**

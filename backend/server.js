@@ -33,13 +33,15 @@ app.use((req, res, next) => {
 });
 
 // ---------------------------------------------------------------------------
-// Route mounting
+// Route mounting via route barrel
 // ---------------------------------------------------------------------------
-app.use('/api/maps', require('./routes/mapRoutes'));
-app.use('/api/deliverer', require('./routes/delivererRoutes'));
-app.use('/api/purchaser', require('./routes/purchaserRoutes'));
-app.use('/api/account', require('./routes/userRoutes'));
-app.use('/api/payments', require('./routes/paymentRoutes'));
+const routes = require('./routes');
+
+app.use('/api/maps', routes.mapRoutes);
+app.use('/api/deliverer', routes.delivererRoutes);
+app.use('/api/purchaser', routes.purchaserRoutes);
+app.use('/api/account', routes.userRoutes);
+app.use('/api/payments', routes.paymentRoutes);
 
 // ---------------------------------------------------------------------------
 // Server + Database initialization sequence

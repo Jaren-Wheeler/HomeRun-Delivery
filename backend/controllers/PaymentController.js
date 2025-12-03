@@ -7,8 +7,7 @@
  *
  * Delegates business logic to PaymentService for cleaner separation of concerns.
  */
-
-const PaymentService = require('../services/paymentService');
+const { PaymentService } = require('../services');
 
 const PaymentController = {
   /**
@@ -24,6 +23,9 @@ const PaymentController = {
       if (!result) {
         return res.status(404).json({ error: 'Delivery not found' });
       }
+
+      // Update delivery status since a driver accepted the job
+      await result.payment.delivery.update({ status: 'closed' });
 
       return res.status(201).json({
         clientSecret: result.intent.client_secret,

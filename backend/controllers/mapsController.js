@@ -7,7 +7,7 @@
  * Business logic delegated to MapsService for clean architecture.
  */
 
-const MapsService = require('../services/mapsService');
+const { MapsService } = require('../services');
 
 const MapsController = {
   /**
