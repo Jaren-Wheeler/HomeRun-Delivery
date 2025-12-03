@@ -48,7 +48,7 @@ const MapComponent = ({ searchCenter }) => {
     // 1. Fetch Google Maps API KEY
     //
     useEffect(() => {
-        fetch("http://localhost:5000/api/maps-key")
+        fetch("http://localhost:5000/api/maps/maps-key")
             .then((res) => res.json())
             .then((data) => {
                 console.log("Loaded API Key:", data.key);
@@ -61,7 +61,7 @@ const MapComponent = ({ searchCenter }) => {
     // 2. Fetch list of deliveries
     //
     useEffect(() => {
-        fetch("http://localhost:5000/api/markers")
+        fetch("http://localhost:5000/api/maps/markers")
             .then((res) => res.json())
             .then((data) => {
                 console.log("Deliveries from backend:", data);
@@ -216,7 +216,7 @@ const MapComponent = ({ searchCenter }) => {
                 </div>
 
                 {/* 
-                    ⭐ THE GOOGLE MAP ITSELF 
+                    THE GOOGLE MAP ITSELF 
                 */}
                 <GoogleMap
                     mapContainerStyle={{ width: "100%", height: "100%" }}

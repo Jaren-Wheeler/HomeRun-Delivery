@@ -33,7 +33,7 @@ const User = sequelize.define("User", {
     },
     isVerified: {
         type: DataTypes.BOOLEAN,
-        allowNull: false
+        allowNull: true,
     },
     ratingAverage: {
         type: DataTypes.FLOAT
