@@ -6,7 +6,7 @@ export default function CreateAccount() {
         last_name: "",
         email: "",
         phone: "",
-        role: false,
+        role: "purchaser",
         password: "",
         confirmPassword: ""
     });
@@ -32,11 +32,11 @@ export default function CreateAccount() {
             email: formData.email,
             phone: formData.phone,
             password: formData.password,
-            role: formData.role ? "Deliverer" : "User"
+            role: formData.role ? "deliverer" : "purchaser"
         };
 
         try {
-            const response = await fetch("http://localhost:5000/api/users", {
+            const response = await fetch("http://localhost:5000/api/account", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
@@ -62,10 +62,15 @@ return (
             <input type="text" name="last_name" placeholder="Last Name" required value={formData.last_name} onChange={handleUpdate} />
             <input type="text" name="phone" placeholder="Phone Number" required value={formData.phone} onChange={handleUpdate} />
             <input type="email" name="email" placeholder="Email" required value={formData.email} onChange={handleUpdate} />
-            <label htmlFor="role">
-            <input type="checkbox" name="role" checked={formData.role} onChange={handleUpdate} />
-                Would you like to become a deliverer?
-            </label>
+            <label htmlFor="role">Do you want to be a deliverer?</label>
+            <input type="checkbox" name="role"
+                onChange={(e) =>
+                    setFormData(prev => ({
+                    ...prev,
+                    role: e.target.checked ? "deliverer" : "purchaser"
+                    }))
+                }
+            />
             <input type="password" name="password" placeholder="Password" required value={formData.password} onChange={handleUpdate} />
             <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" required value={formData.confirmPassword} onChange={handleUpdate} />
             <button type="submit">Create Account</button>

@@ -61,13 +61,13 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
         if (!delivererId) return;
 
         // Load closed jobs (pending)
-        fetch(`http://localhost:5000/api/deliverer/${delivererId}/pending`)
+        fetch(`http://localhost:5000/api/deliveries/deliverer/${delivererId}/pending`)
             .then((res) => res.json())
             .then(setPendingJobs)
             .catch(console.error);
 
         // Load completed jobs
-        fetch(`http://localhost:5000/api/deliverer/${delivererId}/completed`)
+        fetch(`http://localhost:5000/api/deliveries/deliverer/${delivererId}/completed`)
             .then((res) => res.json())
             .then(setCompletedJobs)
             .catch(console.error);
@@ -81,8 +81,8 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
             });
 
             // Now REFRESH both lists from backend
-            const pending = await fetch(`http://localhost:5000/api/deliverer/${delivererId}/pending`).then(r => r.json());
-            const completed = await fetch(`http://localhost:5000/api/deliverer/${delivererId}/completed`).then(r => r.json());
+            const pending = await fetch(`http://localhost:5000/api/deliveries/deliverer/${delivererId}/pending`).then(r => r.json());
+            const completed = await fetch(`http://localhost:5000/api/deliveries/deliverer/${delivererId}/completed`).then(r => r.json());
 
             setPendingJobs(pending);
             setCompletedJobs(completed);

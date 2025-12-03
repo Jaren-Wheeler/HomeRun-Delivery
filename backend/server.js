@@ -14,8 +14,8 @@ const initDb = require("./config/dbSync");
 
 const PORT = process.env.PORT || 5000;
 
-
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 
@@ -24,10 +24,10 @@ const mapRoutes = require('./routes/mapRoutes');
 app.use("/api", mapRoutes);
 
 const deliveryRoutes = require('./routes/deliveryRoutes');
-app.use("/api", deliveryRoutes);
+app.use("/api/deliveries", deliveryRoutes);
 
 const userRoutes = require('./routes/userRoutes');
-app.use("/api/users", userRoutes);
+app.use("/api/account", userRoutes);
 
 // starts the server, initializes the database
 const startServer = async () => {
