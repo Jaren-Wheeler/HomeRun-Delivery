@@ -4,28 +4,22 @@ require('dotenv').config();
 
 
 // Sequelize object. Data sourced in environment variables
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  
-  {
-    dialect: "mssql",
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
+    host: "localhost",
+    dialect: 'mssql',
     dialectOptions: {
-      options: {
-        encrypt: false,
-        trustServerCertificate: true
-      }
+        options: {
+            enableArithAbort: true,
+            trustServerCertificate: true
+        }
     },
-    server: process.env.DB_SERVER,   // <-- KEY FIX
-    port: 1433,
-    logging: false
-  }
+   
+});
 
-  
-);
-
-
+sequelize.authenticate()
+    .then(() => console.log("✅ Database connection established"))
+    .catch(err => console.error("❌ Unable to connect to the database:", err));
+    
 
 
 module.exports = sequelize;

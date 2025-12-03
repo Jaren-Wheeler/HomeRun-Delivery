@@ -1,32 +1,6 @@
-import React , {useState} from 'react';
+import React from 'react';
 
 const DeliveryDetails = ({ delivery }) => {
-
-    const acceptJob = async (deliveryId) => {
-        const delivererId = 3;
-
-        try {
-            const response = await fetch(`http://localhost:5000/api/deliveries/${delivery.delivery_id}/accept`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ deliverer_id: delivererId })
-            });
-
-            if (!response.ok) {
-                alert("Failed to accept job");
-                return;
-            }
-
-            alert("Job accepted!");
-
-        } catch (err) {
-            console.error("Error:", err);
-            alert("Server error");
-        }
-    };
-
     if (!delivery) return <div>Loading...</div>;
 
     const purchaser = delivery.Purchaser;
@@ -100,7 +74,7 @@ const DeliveryDetails = ({ delivery }) => {
                     }}
                     onMouseEnter={(e) => (e.target.style.backgroundColor = "#16a34a")}
                     onMouseLeave={(e) => (e.target.style.backgroundColor = "#22c55e")}
-                    onClick={() => acceptJob(delivery.delivery_id)}
+                    onClick={() => console.log("Accepting job:", delivery.delivery_id)}
                 >
                     Accept Job
                 </button>
