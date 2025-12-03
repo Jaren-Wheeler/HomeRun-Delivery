@@ -28,21 +28,21 @@ const inputStyle = {
 };
 
 export default function ManageDeliveryPopup({ delivery, onClose, onUpdated, onDeleted }) {
-    const [pickup, setPickup] = useState(delivery.pickup_address);
-    const [dropoff, setDropoff] = useState(delivery.dropoff_address);
-    const [desc, setDesc] = useState(delivery.item_description);
-    const [pay, setPay] = useState(delivery.proposed_payment);
+    const [pickup, setPickup] = useState(delivery.pickupAddress);
+    const [dropoff, setDropoff] = useState(delivery.dropoffAddress);
+    const [desc, setDesc] = useState(delivery.itemDescription);
+    const [pay, setPay] = useState(delivery.proposedPayment);
 
     const handleSave = async () => {
         try {
-            const res = await fetch(`http://localhost:5000/api/deliveries/${delivery.delivery_id}`, {
+            const res = await fetch(`http://localhost:5000/api/purchaser/${delivery.deliveryId}/update`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    pickup_address: pickup,
-                    dropoff_address: dropoff,
-                    item_description: desc,
-                    proposed_payment: pay
+                    pickupAddress: pickup,
+                    dropoffAddress: dropoff,
+                    itemDescription: desc,
+                    proposedPayment: pay
                 })
             });
 
@@ -50,6 +50,9 @@ export default function ManageDeliveryPopup({ delivery, onClose, onUpdated, onDe
                 const text = await res.text();
                 console.error("Update error:", text);
                 alert("Failed to update delivery");
+                console.log("Updating ID:", delivery.deliveryId);
+                console.log("Full delivery object:", delivery);
+
                 return;
             }
 
@@ -68,7 +71,7 @@ export default function ManageDeliveryPopup({ delivery, onClose, onUpdated, onDe
         if (!window.confirm("Are you sure you want to delete this delivery?")) return;
 
         try {
-            const res = await fetch(`http://localhost:5000/api/deliveries/${delivery.delivery_id}`, {
+            const res = await fetch(`http://localhost:5000/api/purchaser/${delivery.deliveryId}/delete`, {
                 method: "DELETE"
             });
 
@@ -80,7 +83,7 @@ export default function ManageDeliveryPopup({ delivery, onClose, onUpdated, onDe
             }
 
             // Notify parent which delivery was deleted
-            onDeleted && onDeleted(delivery.delivery_id);
+            onDeleted && onDeleted(delivery.deliveryId);
             onClose();
 
         } catch (err) {
@@ -92,7 +95,7 @@ export default function ManageDeliveryPopup({ delivery, onClose, onUpdated, onDe
     return (
         <div style={overlay}>
             <div style={windowStyle}>
-                <h2>Edit Delivery #{delivery.delivery_id}</h2>
+                <h2>Edit Delivery #{delivery.deliveryId}</h2>
 
                 <label>Pickup</label>
                 <input

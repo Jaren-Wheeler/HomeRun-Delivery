@@ -67,7 +67,7 @@ return (
                 onChange={(e) =>
                     setFormData(prev => ({
                     ...prev,
-                    role: e.target.checked ? "deliverer" : "purchaser"
+                    role: e.target.checked ? "Deliverer" : "Purchaser"
                     }))
                 }
             />

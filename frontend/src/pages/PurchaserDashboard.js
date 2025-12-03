@@ -20,7 +20,7 @@ const PurchaserDashboard = () => {
     };
 
     const handleUpdate = async (id, data) => {
-        await fetch(`http://localhost:5000/api/deliveries/${id}`, {
+        await fetch(`http://localhost:5000/api/purchaser/${id}/update`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data)
@@ -38,6 +38,20 @@ const PurchaserDashboard = () => {
         setSelectedDelivery(null);
     };
 
+    const handleDeliveryUpdated = (updatedDelivery) => {
+        setDeliveries(prev =>
+            prev.map(d =>
+                d.delivery_id === updatedDelivery.delivery_id ? updatedDelivery : d
+            )
+        );
+    };
+
+    const handleDeliveryDeleted = (deletedId) => {
+        setDeliveries(prev =>
+            prev.filter(d => d.delivery_id !== deletedId)
+        );
+    };
+
     // Fetch deliveries from backend corresponding to logged in purchaser
     useEffect(() => {
         const purchaserId = sessionStorage.getItem("user_id"); // fetch the currently logged in user
@@ -46,7 +60,7 @@ const PurchaserDashboard = () => {
             console.error("No logged-in user id found in session storage");
             return;
         }
-        fetch(`http://localhost:5000/api/deliveries/purchaser/${purchaserId}/pending`)
+        fetch(`http://localhost:5000/api/purchaser/${purchaserId}/pending`)
             .then((res) => res.json())
             .then((data) => setDeliveries(data))
             .catch((err) => console.error("Error fetching deliveries:", err));
@@ -144,15 +158,15 @@ const PurchaserDashboard = () => {
 
                         <tbody>
                             {filteredDeliveries.map((d) => (
-                                <tr key={d.delivery_id}
+                                <tr key={d.deliveryId}
                                     onClick={() => setSelectedDelivery(d)}
                                     style={{cursor: 'pointer'}}
                                 >
-                                    <td style={td}>{d.delivery_id}</td>
-                                    <td style={td}>{d.pickup_address}</td>
-                                    <td style={td}>{d.dropoff_address}</td>
-                                    <td style={td}>{d.item_description}</td>
-                                    <td style={td}>${d.proposed_payment}</td>
+                                    <td style={td}>{d.deliveryId}</td>
+                                    <td style={td}>{d.pickupAddress}</td>
+                                    <td style={td}>{d.dropoffAddress}</td>
+                                    <td style={td}>{d.itemDescription}</td>
+                                    <td style={td}>${d.proposedPayment}</td>
                                     <td style={td}>{d.status}</td>
                                 </tr>
                             ))}
@@ -165,7 +179,7 @@ const PurchaserDashboard = () => {
                 <RateDeliveryPopup
                     delivery={selectedDelivery}
                     onClose={() => setSelectedDelivery(null)}
-                    onRate={(stars) => handleRating(selectedDelivery.delivery_id, stars)}
+                    onRate={(stars) => handleRating(selectedDelivery.deliveryId, stars)}
                 />
             )}
 
@@ -173,8 +187,8 @@ const PurchaserDashboard = () => {
                 <ManageDeliveryPopup
                     delivery={selectedDelivery}
                     onClose={() => setSelectedDelivery(null)}
-                    onSave={(updatedData) => handleUpdate(selectedDelivery.delivery_id, updatedData)}
-                    onDelete={() => handleDelete(selectedDelivery.delivery_id)}
+                    onSave={(updatedData) => handleUpdate(selectedDelivery.deliveryId, updatedData)}
+                    onDelete={() => handleDelete(selectedDelivery.deliveryId)}
                 />
             )}
 

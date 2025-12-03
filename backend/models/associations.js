@@ -23,7 +23,7 @@ User.hasMany(Delivery, {
   onDelete: 'CASCADE',
 });
 Delivery.belongsTo(User, {
-  as: 'purchaser',
+  as: 'Purchaser',
   foreignKey: 'purchaser_id',
 });
 
@@ -40,7 +40,7 @@ User.hasMany(Delivery, {
   onDelete: 'SET NULL',
 });
 Delivery.belongsTo(User, {
-  as: 'deliverer',
+  as: 'Deliverer',
   foreignKey: 'deliverer_id',
 });
 

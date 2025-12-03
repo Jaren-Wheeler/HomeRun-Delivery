@@ -45,6 +45,44 @@ const PurchaserController = {
       res.status(500).json({ error: 'Failed to create delivery' });
     }
   },
+
+  async updateExistingJobs(req,res) {
+    try {
+        const { id } = req.params;
+        const updateData = req.body;
+
+        const success = await PurchaserService.updateDelivery(id, updateData);
+
+        if (!success) {
+            return res.status(404).json({ error: "Delivery not found" });
+        }
+
+        return res.json({ message: "Delivery updated successfully" });
+
+    } catch (error) {
+        console.error("Error updating delivery:", error);
+        res.status(500).json({ error: "Failed to update delivery" });
+    }
+  },
+
+  async deleteOpenJob(req, res) {
+    try {
+        const { id } = req.params;
+
+        const deleted = await PurchaserService.deleteDelivery(id);
+
+        if (!deleted) {
+            return res.status(404).json({ error: "Delivery not found" });
+        }
+
+        return res.json({ message: "Delivery deleted successfully" });
+
+    } catch (error) {
+        console.error("Error deleting delivery:", error);
+        return res.status(500).json({ error: "Failed to delete delivery" });
+    }
+}
 };
+
 
 module.exports = PurchaserController;
