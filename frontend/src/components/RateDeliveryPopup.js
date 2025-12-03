@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 
 const overlayStyle = {
     position: "fixed",
@@ -32,31 +32,46 @@ const closeButton = {
     marginTop: "10px"
 };
 
-export default function RateDeliveryPopup({ delivery, onClose }) {
-    if (!delivery) return null;
+
+export default function RateDeliveryPopup({ delivery, onClose, onRate }) {
+    const [rating, setRating] = useState(0);
 
     return (
         <div style={overlayStyle}>
             <div style={windowStyle}>
-                <h2 style={{ marginBottom: "12px" }}>
-                    Delivery #{delivery.delivery_id}
-                </h2>
+                <h2>Rate Your Delivery</h2>
 
-                <p><strong>Pickup:</strong> {delivery.pickup_address}</p>
-                <p><strong>Dropoff:</strong> {delivery.dropoff_address}</p>
-                <p><strong>Description:</strong> {delivery.item_description}</p>
-                <p><strong>Payment:</strong> ${delivery.proposed_payment}</p>
-                <p><strong>Status:</strong> {delivery.status}</p>
+                <p>Delivery #{delivery.delivery_id}</p>
 
-                {/* placeholder for future rating UI */}
-                <p style={{ marginTop: "15px", fontStyle: "italic", color: "#666" }}>
-                    Rating options will go here.
-                </p>
+                {/* STAR RATING */}
+                <div style={{ fontSize: "32px", margin: "12px 0" }}>
+                    {[1,2,3,4,5].map(num => (
+                        <span
+                            key={num}
+                            style={{ 
+                                cursor: "pointer",
+                                color: num <= rating ? "#facc15" : "#ccc",
+                                marginRight: "4px"
+                            }}
+                            onClick={() => setRating(num)}
+                        >
+                            ★
+                        </span>
+                    ))}
+                </div>
 
-                <button style={closeButton} onClick={onClose}>
+                <button
+                    onClick={() => onRate(rating)}
+                    style={{ background: "#22c55e", color: "white", padding: "8px 12px" }}
+                >
+                    Submit Rating
+                </button>
+
+                <button onClick={onClose} style={{ marginLeft: "8px" }}>
                     Close
                 </button>
             </div>
         </div>
     );
 }
+
