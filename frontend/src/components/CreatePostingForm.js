@@ -55,13 +55,20 @@ const CreatePostingForm = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        const purchaserId = sessionStorage.getItem("user_id");
+
+        if (!purchaserId) {
+            alert("You must be logged in to create a delivery request.");
+            return;
+        }
+
         const deliveryData = {
             pickup_address: pickupAddress,
             dropoff_address: dropoffAddress,
             item_description: description,
             proposed_payment: payment,
             status: "open",
-            purchaser_id: 1, // <--- CHANGE based on logged in user
+            purchaser_id: Number(purchaserId),
             deliverer_id: null,
             latitude: null,
             longitude: null
@@ -75,6 +82,8 @@ const CreatePostingForm = () => {
             });
 
             if (!response.ok) {
+                const err = await response.text();
+                console.error("Error saving delivery:", err);
                 alert("Error saving delivery request.");
                 return;
             }
@@ -95,48 +104,47 @@ const CreatePostingForm = () => {
     return (
         <form onSubmit={handleSubmit}>
             <label style={styles.label}>Pickup Address</label>
-                <input
-                    type="text"
-                    style={styles.input}
-                    value={pickupAddress}
-                    onChange={(e) => setPickupAddress(e.target.value)}
-                    placeholder="123 Main St, Edmonton, AB"
-                    required
-                />
+            <input
+                type="text"
+                style={styles.input}
+                value={pickupAddress}
+                onChange={(e) => setPickupAddress(e.target.value)}
+                placeholder="123 Main St, Edmonton, AB"
+                required
+            />
 
-                <label style={styles.label}>Drop-off Address</label>
-                <input
-                    type="text"
-                    style={styles.input}
-                    value={dropoffAddress}
-                    onChange={(e) => setDropoffAddress(e.target.value)}
-                    placeholder="456 King St, Calgary, AB"
-                    required
-                />
+            <label style={styles.label}>Drop-off Address</label>
+            <input
+                type="text"
+                style={styles.input}
+                value={dropoffAddress}
+                onChange={(e) => setDropoffAddress(e.target.value)}
+                placeholder="456 King St, Calgary, AB"
+                required
+            />
 
-                <label style={styles.label}>Item Description</label>
-                <textarea
-                    style={styles.textarea}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Small package, around 5 lbs"
-                    required
-                />
+            <label style={styles.label}>Item Description</label>
+            <textarea
+                style={styles.textarea}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Small package, around 5 lbs"
+                required
+            />
 
-                <label style={styles.label}>Proposed Payment ($)</label>
-                <input
-                    type="number"
-                    style={styles.input}
-                    value={payment}
-                    onChange={(e) => setPayment(e.target.value)}
-                    placeholder="20"
-                    required
-                />
+            <label style={styles.label}>Proposed Payment ($)</label>
+            <input
+                type="number"
+                style={styles.input}
+                value={payment}
+                onChange={(e) => setPayment(e.target.value)}
+                placeholder="20"
+                required
+            />
 
-                <button type="submit" style={styles.button}>
-                    Submit
-                </button>
-
+            <button type="submit" style={styles.button}>
+                Submit
+            </button>
         </form>
     );
 };

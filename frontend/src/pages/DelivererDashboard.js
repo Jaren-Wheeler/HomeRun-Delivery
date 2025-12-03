@@ -8,6 +8,9 @@ const DelivererDashboard = () => {
     const [searchCenter, setSearchCenter] = useState(null);
     const [showPendingJobs, setShowPendingJobs] = useState(false);
 
+    // get user id and role of the currently logged in user
+    const delivererId = sessionStorage.getItem("user_id");
+    const role = sessionStorage.getItem("role");
 
     const onLoad = (auto) => {
         setAutocomplete(auto);
@@ -46,7 +49,7 @@ const DelivererDashboard = () => {
                 {/* Open Pending Jobs Component */}
                 {showPendingJobs && (
                     <PendingJobsPopup
-                        delivererId={3} /* Must fetch the current id of the logged in user */
+                        delivererId={Number(delivererId)} /* Must fetch the current id of the logged in user */
                         onClose={() => setShowPendingJobs(false)}
                 />
 )}
