@@ -33,3 +33,15 @@ axios
       console.error('Error:', err.message);
     }
   });
+// script: printUsers.js
+const { User } = require('./models');
+
+async function showUsers() {
+  const users = await User.findAll({
+    attributes: ['user_id', 'email', 'role'],
+  });
+  console.log(users.map((u) => u.toJSON()));
+  process.exit();
+}
+
+showUsers();

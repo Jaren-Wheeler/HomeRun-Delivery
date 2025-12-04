@@ -13,6 +13,7 @@ const paymentRoutes = require('./paymentRoutes');
 const purchaserRoutes = require('./purchaserRoutes');
 const userRoutes = require('./userRoutes');
 
+console.log('🎯 Routes successfully loaded');
 module.exports = {
   delivererRoutes,
   mapRoutes,

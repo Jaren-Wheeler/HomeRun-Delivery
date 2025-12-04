@@ -1,9 +1,15 @@
 /**
  * @file Delivery.js
- * Sequelize model representing a delivery job posted by a purchaser.
+ * Sequelize model representing a delivery job created by a purchaser.
  *
- * Tracks required pickup/dropoff info, pricing, geolocation,
- * and the user IDs linked to each role (purchaser, deliverer).
+ * Responsibilities:
+ * - Store pickup and dropoff addresses + geolocation
+ * - Track user relationships (purchaser + deliverer)
+ * - Manage job lifecycle: open → closed → completed
+ * - Support Stripe payment reference (PaymentIntent)
+ *
+ * Notes:
+ * Columns explicitly map camelCase → snake_case to keep DB naming consistent.
  */
 
 const { DataTypes } = require('sequelize');
@@ -12,14 +18,31 @@ const sequelize = require('../config/db');
 const Delivery = sequelize.define(
   'Delivery',
   {
+    /**
+     * Primary Key
+     * Unique delivery reference used throughout the entire system.
+     */
     deliveryId: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
-      field: 'delivery_id', // Keeps column name backwards compatible
+      field: 'delivery_id',
     },
 
-    // Where the item starts and ends
+    /**
+     * Stripe Payment Intent ID
+     * Created only once a deliverer accepts the job.
+     */
+    paymentIntentId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'payment_intent_id',
+    },
+
+    /**
+     * Pickup and Dropoff details
+     * Required for dispatch and map previews.
+     */
     pickupAddress: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -31,11 +54,23 @@ const Delivery = sequelize.define(
       field: 'dropoff_address',
     },
 
-    // geolocation for map markers
-    latitude: { type: DataTypes.FLOAT, allowNull: true },
-    longitude: { type: DataTypes.FLOAT, allowNull: true },
+    /**
+     * Geolocation for map display and navigation
+     * Optional — not every delivery will include precise coordinates.
+     */
+    latitude: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    longitude: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
 
-    // Information about item and cost
+    /**
+     * Item + price details
+     * Decimal used for money to avoid float rounding issues.
+     */
     itemDescription: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -48,10 +83,10 @@ const Delivery = sequelize.define(
     },
 
     /**
-     * Job lifecycle:
-     * - "open"     : awaiting a driver
-     * - "closed"   : assigned + waiting for completion
-     * - "completed": finished job, ready for payment capture
+     * Delivery lifecycle states:
+     * - "open"     : waiting for a deliverer
+     * - "closed"   : deliverer assigned, not finished
+     * - "completed": proof delivered, ready for Stripe capture
      */
     status: {
       type: DataTypes.ENUM('open', 'closed', 'completed'),
@@ -59,7 +94,10 @@ const Delivery = sequelize.define(
       defaultValue: 'open',
     },
 
-    // Foreign keys: linked in associations.js
+    /**
+     * Foreign key relationships
+     * Managed via model associations — not validated here.
+     */
     purchaserId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -73,8 +111,19 @@ const Delivery = sequelize.define(
   },
   {
     tableName: 'Deliveries',
-    timestamps: true, // createdAt + updatedAt managed automatically
-    //underscored: true, // ensures DB column naming consistency
+
+    /**
+     * Enable Sequelize-managed timestamps:
+     * createdAt: when delivery is created
+     * updatedAt: when delivery status changes
+     */
+    timestamps: true,
+
+    /**
+     * Optional: If we decide later we want every DB column in snake_case
+     * uncomment this — Sequelize will auto-map for us.
+     */
+    // underscored: true,
   }
 );
 

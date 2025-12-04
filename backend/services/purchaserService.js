@@ -23,7 +23,8 @@ const PurchaserService = {
   async getPurchaserPendingJobs(purchaserId) {
     return Delivery.findAll({
       where: {
-        purchaser_id: purchaserId,
+        purchaserId,
+        status: 'open',
       },
     });
   },
@@ -41,38 +42,33 @@ const PurchaserService = {
    */
   async createDelivery(payload) {
     return Delivery.create({
-      pickupAddress: payload.pickup_address,
-      dropoffAddress: payload.dropoff_address,
+      pickupAddress: payload.pickupAddress,
+      dropoffAddress: payload.dropoffAddress,
       latitude: payload.latitude || null,
       longitude: payload.longitude || null,
-      itemDescription: payload.item_description,
-      proposedPayment: payload.proposed_payment,
-      purchaserId: payload.purchaser_id,
-      delivererId: null, // no driver yet
+      itemDescription: payload.itemDescription,
+      proposedPayment: payload.proposedPayment,
+      purchaserId: payload.purchaserId,
+      delivererId: null,
       status: 'open',
     });
   },
 
-
   async updateDelivery(id, updateData) {
     const result = await Delivery.update(updateData, {
-        where: { deliveryId: id }
+      where: { deliveryId: id },
     });
 
     return result[0] > 0; // returns true if something was updated
-    
   },
 
   async deleteDelivery(id) {
-      const deleted = await Delivery.destroy({
-          where: { deliveryId: id }
-      });
+    const deleted = await Delivery.destroy({
+      where: { deliveryId: id },
+    });
 
-      return deleted > 0; // true if a row was deleted
-  }
-
-
+    return deleted > 0; // true if a row was deleted
+  },
 };
-
 
 module.exports = PurchaserService;
