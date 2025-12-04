@@ -55,27 +55,31 @@ export default function CreateAccount() {
         
     
 return (
-    <div>
-        <h2>Create Account</h2>
-        <form onSubmit={handleSubmit}>
-            <input type="text" name="first_name" placeholder="First Name" required value={formData.first_name} onChange={handleUpdate}/>
-            <input type="text" name="last_name" placeholder="Last Name" required value={formData.last_name} onChange={handleUpdate} />
-            <input type="text" name="phone" placeholder="Phone Number" required value={formData.phone} onChange={handleUpdate} />
-            <input type="email" name="email" placeholder="Email" required value={formData.email} onChange={handleUpdate} />
-            <label htmlFor="role">Do you want to be a deliverer?</label>
-            <input type="checkbox" name="role"
-                onChange={(e) =>
-                    setFormData(prev => ({
-                    ...prev,
-                    role: e.target.checked ? "Deliverer" : "Purchaser"
-                    }))
-                }
-            />
-            <input type="password" name="password" placeholder="Password" required value={formData.password} onChange={handleUpdate} />
-            <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" required value={formData.confirmPassword} onChange={handleUpdate} />
-            <button type="submit">Create Account</button>
+    <div className="login-Bg">
+        <div className="login-card">
+            <h2>Create Account</h2>
+            <form onSubmit={handleSubmit}>
+                <input type="text" name="first_name" placeholder="First Name" required value={formData.first_name} onChange={handleUpdate}/>
+                <input type="text" name="last_name" placeholder="Last Name" required value={formData.last_name} onChange={handleUpdate} />
+                <input type="text" name="phone" placeholder="Phone Number" required value={formData.phone} onChange={handleUpdate} />
+                <input type="email" name="email" placeholder="Email" required value={formData.email} onChange={handleUpdate} />
+                <div className="checkbox-container">
+                <label htmlFor="role">Do you want to be a delivery driver?</label>
+                    <input type="checkbox" name="role"
+                        onChange={(e) =>
+                            setFormData(prev => ({
+                            ...prev,
+                            role: e.target.checked ? "deliverer" : "purchaser"
+                            }))
+                        }
+                    />
+                </div>
+                <input type="password" name="password" placeholder="Password" required value={formData.password} onChange={handleUpdate} />
+                <input type="password" name="confirmPassword" id="confirmPassword" placeholder="Confirm Password" required value={formData.confirmPassword} onChange={handleUpdate} />
+                <button type="submit">Create Account</button>
         
-        </form>
+            </form>
+        </div>
     </div>
     );
 }

@@ -59,11 +59,9 @@ export default function Login() {
             // ⬅️ redirect – tweak these paths to match your routes
             if (role === "Purchaser") {
                 window.location.href = "/purchaser-dashboard";
-            } else if (role === "Deliverer") {
-                window.location.href = "/deliverer-dashboard";
             } else {
-                window.location.href = "/home";
-            }
+                window.location.href = "/deliverer-dashboard";
+            } 
 
         } catch (error) {
             console.error("There was an error logging in!", error);
@@ -72,35 +70,40 @@ export default function Login() {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="email"
-                name="email"
-                id="email"
-                placeholder="Email"
-                required
-                value={formData.email}
-                onChange={handleUpdate}
-            />
+        <div className="login-Bg">
+            <div className="login-card">
+            <h2>Login</h2>
+                <form onSubmit={handleSubmit}>
+                    <input
+                    type="email"
+                    name="email"
+                    id="email"
+                    placeholder="Email"
+                    required
+                    value={formData.email}
+                    onChange={handleUpdate}
+                />
 
-            <input
-                type="password"
-                name="password"
-                id="password"
-                placeholder="Password"
-                required
-                value={formData.password}
-                onChange={handleUpdate}
-            />
+                <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    placeholder="Password"
+                    required
+                    value={formData.password}
+                    onChange={handleUpdate}
+                />
 
-            <button type="submit">Login</button>
+                <button type="submit">Login</button>
 
-            <button
-                type="button"
-                onClick={() => window.location.href = "/create-account"}
-            >
+                <button
+                    type="button"
+                    onClick={() => window.location.href = "/create-account"}
+                >
                 Create Account
-            </button>
-        </form>
+                </button>
+                </form>
+            </div>
+        </div>
     );
 }

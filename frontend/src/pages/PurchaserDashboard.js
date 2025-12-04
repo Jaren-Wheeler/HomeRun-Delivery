@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import CreatePostingForm from "../components/CreatePostingForm";
 import RateDeliveryPopup from "../components/RateDeliveryPopup";
 import ManageDeliveryPopup from "../components/ManageDeliveryPopup";
+import NavBar from "../components/NavBar";
 
 const PurchaserDashboard = () => {
     const [deliveries, setDeliveries] = useState([]);
@@ -69,11 +70,14 @@ const PurchaserDashboard = () => {
     return (
         <div
             style={{
-                maxWidth: "900px",
+                width:"90%",
+                minHeight: "100vh",
                 margin: "0 auto",
                 padding: "2rem",
+                background:"#2563eb"
             }}
         >
+            <NavBar></NavBar>
             <h1
                 style={{
                     fontSize: "2rem",

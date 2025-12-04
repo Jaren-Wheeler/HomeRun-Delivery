@@ -5,7 +5,7 @@ const styles = {
         maxWidth: "600px",
         margin: "30px auto",
         padding: "20px",
-        background: "white",
+        background: "#white",
         borderRadius: "12px",
         boxShadow: "0 0 10px rgba(0,0,0,0.1)"
     },
@@ -102,7 +102,7 @@ const CreatePostingForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={styles.form}>
             <label style={styles.label}>Pickup Address</label>
             <input
                 type="text"
