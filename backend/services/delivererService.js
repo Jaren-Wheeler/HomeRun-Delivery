@@ -9,12 +9,12 @@
 const { Delivery, User } = require('../models');
 
 const DelivererService = {
-  async getDelivererPendingJobs() {
+  async getDelivererPendingJobs(delivererId) {
     // Deliverer ID not needed in query anymore
     return Delivery.findAll({
       where: {
-        status: 'open',
-        delivererId: null,
+        status: 'closed',
+        delivererId: delivererId,
       },
       include: [
         {
@@ -56,13 +56,9 @@ const DelivererService = {
       throw new Error('Delivery not found');
     }
 
-    if (delivery.status !== 'open') {
-      throw new Error('Delivery is not open');
-    }
-
     const updatedDelivery = await delivery.update({
       delivererId,
-      // status stays "open" here
+      status: 'closed'
     });
 
     return updatedDelivery;

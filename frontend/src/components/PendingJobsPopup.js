@@ -77,7 +77,8 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
         try {
             await fetch(`http://localhost:5000/api/deliverer/${deliveryId}/complete`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" }
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ deliveryId: deliveryId })
             });
 
             
