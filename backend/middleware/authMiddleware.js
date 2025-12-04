@@ -1,9 +1,10 @@
 /**
  * @file authMiddleware.js
- * Verifies JWT and loads authenticated user into req.user
+ * Protects routes by requiring a valid JWT token.
+ * Loads authenticated user instance into req.user
  */
 
-const jwt = require('jsonwebtoken');
+const { verifyToken } = require('../utils/token');
 const { User } = require('../models');
 
 const requireAuth = async (req, res, next) => {
@@ -15,14 +16,14 @@ const requireAuth = async (req, res, next) => {
     }
 
     const token = header.split(' ')[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verifyToken(token); // { id, iat, exp }
 
     const user = await User.findByPk(decoded.id);
     if (!user) {
-      return res.status(401).json({ error: 'User not found for token' });
+      return res.status(401).json({ error: 'Token user no longer exists' });
     }
 
-    req.user = user;
+    req.user = user; // attach user for next middleware/controllers
     next();
   } catch (err) {
     console.error('Auth error:', err);
