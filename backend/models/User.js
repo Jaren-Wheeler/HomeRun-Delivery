@@ -2,6 +2,12 @@
  * @file User.js
  * Core user identity for the platform, supports both purchasers and deliverers.
  * Controls authentication, contact info, and reputation fields.
+ *
+ * IMPORTANT:
+ * The database primary key column is `user_id`, but authentication (JWT), APIs,
+ * and associations expect `id`. The getter below exposes `id` virtually so that:
+ *   - JWT tokens can safely contain `{ id: user.id }`
+ *   - Sequelize still stores the real column `user_id` internally
  */
 
 const { DataTypes } = require('sequelize');
@@ -10,6 +16,10 @@ const sequelize = require('../config/db');
 const User = sequelize.define(
   'User',
   {
+    /**
+     * Primary Key — REAL column in the database.
+     * Exposed through virtual getter "id" below for consistency.
+     */
     user_id: {
       type: DataTypes.INTEGER,
       autoIncrement: true,
@@ -31,9 +41,7 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-      validate: {
-        isEmail: true,
-      },
+      validate: { isEmail: true },
     },
     passwordHash: {
       type: DataTypes.STRING,
@@ -73,6 +81,22 @@ const User = sequelize.define(
   {
     timestamps: true,
     tableName: 'Users',
+    underscored: true, // converts createdAt → created_at in DB
+
+    /**
+     * Allows code to reference user.id while DB keeps user_id.
+     * Fixes breakage in:
+     *  - JWT signToken({ id: user.id })
+     *  - req.user.id in auth middleware
+     *  - any API returning user objects
+     */
+    getterMethods: {
+      id() {
+        return this.getDataValue('user_id');
+      },
+    },
+
+    /** Enforce uniqueness for login identity */
     indexes: [
       {
         unique: true,
