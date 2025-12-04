@@ -59,11 +59,9 @@ export default function Login() {
             // ⬅️ redirect – tweak these paths to match your routes
             if (role === "Purchaser") {
                 window.location.href = "/purchaser-dashboard";
-            } else if (role === "Deliverer") {
-                window.location.href = "/deliverer-dashboard";
             } else {
-                window.location.href = "/home";
-            }
+                window.location.href = "/deliverer-dashboard";
+            } 
 
         } catch (error) {
             console.error("There was an error logging in!", error);

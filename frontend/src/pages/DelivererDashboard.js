@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import MapComponent from '../components/MapComponent';
 import PendingJobsPopup from '../components/PendingJobsPopup';
-
+import NavBar from '../components/NavBar';
 
 const DelivererDashboard = () => {
     const [autocomplete, setAutocomplete] = useState(null);
@@ -31,7 +31,7 @@ const DelivererDashboard = () => {
     return (
      
             <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', gap: '1rem' }}>
-                
+                <NavBar></NavBar>
                 <div style={{ height: '10vh', display: 'flex', flexDirection: 'column' }}>
                     <h2 style={{ textAlign: "center" }}>Find Jobs</h2>
 
