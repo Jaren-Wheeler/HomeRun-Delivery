@@ -20,10 +20,10 @@ Base URL (local development):
 
 ## Authentication (`/api/account`)
 
-| Method | Endpoint             | Description                 |
-| ------ | -------------------- | --------------------------- |
-| POST   | `/api/account`       | Register a new user         |
-| POST   | `/api/account/login` | Login and receive user info |
+| Method | Endpoint                | Description                 |
+| ------ | ----------------------- | --------------------------- |
+| POST   | `/api/account/register` | Register a new user         |
+| POST   | `/api/account/login`    | Login and receive user info |
 
 ---
 
@@ -71,7 +71,9 @@ status: open
 | POST   | `/api/payments/cancel/:paymentId`         | Cancel and release authorization   |
 
 ⚙ Powered by Stripe using:
-capture_method: manual
+
+- `capture_method: manual` (funds only move after job completion)
+- PaymentIntent returned with a `clientSecret` that must be confirmed in the frontend using `stripe.confirmCardPayment()`
 
 ---
 

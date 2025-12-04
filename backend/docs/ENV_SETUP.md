@@ -20,6 +20,9 @@ STRIPE_SECRET_KEY=sk_test_your_key_here
 
 # Google Maps
 GOOGLE_MAPS_API_KEY=your_maps_key_here
+
+# JWT
+JWT_SECRET=_API_KEY=your_jwt_key_here
 ```
 
 For production, these values should come from the hosting environment

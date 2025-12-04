@@ -12,7 +12,6 @@
 
 require('dotenv').config();
 
-
 const express = require('express');
 const cors = require('cors');
 const app = express();
@@ -36,6 +35,12 @@ app.use((req, res, next) => {
 // ---------------------------------------------------------------------------
 // Route mounting via route barrel
 // ---------------------------------------------------------------------------
+
+app.use((req, res, next) => {
+  console.log('➡️  HIT ROUTE:', req.method, req.originalUrl);
+  next();
+});
+
 const routes = require('./routes');
 
 app.use('/api/maps', routes.mapRoutes);
