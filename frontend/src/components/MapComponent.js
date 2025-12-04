@@ -165,10 +165,6 @@ const MapComponent = ({ searchCenter }) => {
         <LoadScript googleMapsApiKey={apiKey} libraries={["places"]}>
             <div style={{ width: "100%", height: "100%", position: "relative" }}>
 
-                {/* 
-                    ⭐ FLOATING FLEXBOX SEARCH BAR + RADIUS SELECTOR
-                    ON TOP OF THE MAP
-                */}
                 <div
                     style={{
                         position: "absolute",
@@ -188,7 +184,7 @@ const MapComponent = ({ searchCenter }) => {
                             display: "flex",
                             alignItems: "center",
                             gap: "12px",
-                            background: "white",
+                            background: "#1e7145",
                             padding: "10px 16px",
                             borderRadius: "8px",
                             boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
