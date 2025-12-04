@@ -8,7 +8,7 @@
  *  - Delegate core business logic to UserService
  */
 
-const UserService = require('../services/userService');
+const { UserService } = require('../services');
 
 const UserController = {
   /**
@@ -34,15 +34,18 @@ const UserController = {
 
   /**
    * Authenticate an existing user.
-   * Valid credentials return user profile without password hash.
+   * Delegates to UserService which returns { user, token }.
    */
   async login(req, res) {
     try {
-      const safeUser = await UserService.login(req.body);
+      // UserService.login is responsible for verifying credentials
+      // and generating the JWT token.
+      const { user, token } = await UserService.login(req.body);
 
       return res.status(200).json({
         message: 'Login successful',
-        user: safeUser,
+        user,
+        token,
       });
     } catch (err) {
       console.error('❌ Login Error:', err.message);

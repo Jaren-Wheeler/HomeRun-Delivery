@@ -61,13 +61,13 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
         if (!delivererId) return;
 
         // Load closed jobs (pending)
-        fetch(`http://localhost:5000/api/deliveries/deliverer/${delivererId}/pending`)
+        fetch(`http://localhost:5000/api/deliverer/${delivererId}/pending`)
             .then((res) => res.json())
             .then(setPendingJobs)
             .catch(console.error);
 
         // Load completed jobs
-        fetch(`http://localhost:5000/api/deliveries/deliverer/${delivererId}/completed`)
+        fetch(`http://localhost:5000/api/deliverer/${delivererId}/completed`)
             .then((res) => res.json())
             .then(setCompletedJobs)
             .catch(console.error);
@@ -75,15 +75,17 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
 
     const finishDelivery = async (deliveryId) => {
         try {
-            await fetch(`http://localhost:5000/api/deliveries/${deliveryId}/complete`, {
+            await fetch(`http://localhost:5000/api/deliverer/${deliveryId}/complete`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" }
             });
 
-            // Now REFRESH both lists from backend
-            const pending = await fetch(`http://localhost:5000/api/deliveries/deliverer/${delivererId}/pending`).then(r => r.json());
-            const completed = await fetch(`http://localhost:5000/api/deliveries/deliverer/${delivererId}/completed`).then(r => r.json());
+            
 
+            // Now REFRESH both lists from backend
+            const pending = await fetch(`http://localhost:5000/api/deliverer/${delivererId}/pending`).then(r => r.json());
+            const completed = await fetch(`http://localhost:5000/api/deliverer/${delivererId}/completed`).then(r => r.json());
+            setPendingJobs(prev => prev.filter(job => job.deliveryId !== deliveryId));
             setPendingJobs(pending);
             setCompletedJobs(completed);
 
@@ -105,16 +107,16 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
                     <p>No pending jobs.</p>
                 ) : (
                     pendingJobs.map(job => (
-                        <div key={job.delivery_id} style={cardStyle}>
-                            <h3>{job.item_description}</h3>
+                        <div key={job.deliveryId} style={cardStyle}>
+                            <h3>{job.itemDescription}</h3>
                             <p><strong>Purchaser:</strong> {job.Purchaser.first_name} {job.Purchaser.last_name}</p>
-                            <p><strong>Pickup:</strong> {job.pickup_address}</p>
-                            <p><strong>Dropoff:</strong> {job.dropoff_address}</p>
-                            <p><strong>Payment:</strong> ${job.proposed_payment}</p>
+                            <p><strong>Pickup:</strong> {job.pickupAddress}</p>
+                            <p><strong>Dropoff:</strong> {job.dropoffAddress}</p>
+                            <p><strong>Payment:</strong> ${job.proposedPayment}</p>
 
                             <button
                                 style={finishButtonStyle}
-                                onClick={() => finishDelivery(job.delivery_id)}
+                                onClick={() => finishDelivery(job.deliveryId)}
                             >
                                 Finish Delivery
                             </button>
@@ -130,12 +132,12 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
                     <p>No completed jobs.</p>
                 ) : (
                     completedJobs.map(job => (
-                        <div key={job.delivery_id} style={cardStyle}>
-                            <h3>{job.item_description}</h3>
+                        <div key={job.deliveryId} style={cardStyle}>
+                            <h3>{job.itemDescription}</h3>
                             <p><strong>Purchaser:</strong> {job.Purchaser.first_name} {job.Purchaser.last_name}</p>
-                            <p><strong>Pickup:</strong> {job.pickup_address}</p>
-                            <p><strong>Dropoff:</strong> {job.dropoff_address}</p>
-                            <p><strong>Payment:</strong> ${job.proposed_payment}</p>
+                            <p><strong>Pickup:</strong> {job.pickupAddress}</p>
+                            <p><strong>Dropoff:</strong> {job.dropoffAddress}</p>
+                            <p><strong>Payment:</strong> ${job.proposedPayment}</p>
                         </div>
                     ))
                 )}

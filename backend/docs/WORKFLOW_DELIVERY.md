@@ -16,8 +16,9 @@ Purchaser posts a new delivery request
 Deliverer accepts a job  
 ➡️ `PUT /api/deliverer/:id/accept`
 
-Stripe **authorizes** the payment (funds reserved but not charged)  
-➡️ `POST /api/payments/create-intent/:deliveryId`
+Stripe creates a PaymentIntent with manual capture (funds will only be charged after delivery).
+This step returns a clientSecret that the frontend must use with stripe.confirmCardPayment() to attach a card.
+PaymentIntent state after this step: requires_payment_method.
 
 ### 3 Completed — Job Finished
 

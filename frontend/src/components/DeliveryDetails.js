@@ -16,7 +16,7 @@ const DeliveryDetails = ({ delivery }) => {
 
         try {
             const response = await fetch(
-                `http://localhost:5000/api/deliveries/purchaser/${delivery.delivery_id}/accept`,
+                `http://localhost:5000/api/deliverer/${delivery.delivery_id}/accept`,
                 {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },

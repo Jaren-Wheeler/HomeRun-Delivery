@@ -40,11 +40,9 @@ const Payment = sequelize.define(
         'requires_payment_method',
         'requires_confirmation',
         'requires_capture',
-        'processing',
         'succeeded',
         'canceled'
       ),
-
       allowNull: false,
       defaultValue: 'requires_payment_method',
     },

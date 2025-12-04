@@ -1,22 +1,16 @@
 /**
  * @file DelivererController.js
- * Handles all driver-side delivery interactions:
- *  - View available delivery jobs
- *  - View delivery job history
- *  - Accept open delivery jobs
- *  - Complete closed delivery jobs
- *
- * Enforces business rules through DelivererService:
- *    Controller → (Validation/HTTP) → Service → (Business logic / DB)
+ * Updated to integrate Stripe lifecycle:
+ *  - Accept job → Authorize payment via Stripe PaymentIntent
+ *  - Complete job → Capture authorized payment
  */
 
-const DelivererService = require('../services/delivererService');
+const { DelivererService, PaymentService } = require('../services');
+const { Payment } = require('../models');
 
 const DelivererController = {
   /**
    * GET /api/deliverer/:id/pending
-   * Lists all deliveries with `status: open` and `deliverer_id: null`.
-   * The driver can claim any of these pending jobs.
    */
   async getPendingDelivererJobs(req, res) {
     try {
@@ -32,7 +26,6 @@ const DelivererController = {
 
   /**
    * GET /api/deliverer/:id/completed
-   * Shows the driver’s completed delivery history for reputation + payout tracking.
    */
   async getCompletedDelivererJobs(req, res) {
     try {
@@ -47,47 +40,72 @@ const DelivererController = {
   },
 
   /**
-   * PUT /api/deliverer/:id/complete
-   * Moves a delivery from `closed` → `completed`.
-   * Driver can only complete a job they have accepted.
-   */
-  async completeJob(req, res) {
-    try {
-      const delivery = await DelivererService.completeDelivery(req.params.id);
-
-      if (!delivery) {
-        return res.status(404).json({ error: 'Delivery not found' });
-      }
-
-      res.json({
-        message: 'Delivery marked as completed!',
-        delivery,
-      });
-    } catch (err) {
-      console.error('❌ Complete Job Error:', err);
-      res.status(400).json({ error: err.message || 'Failed to complete job' });
-    }
-  },
-
-  /**
    * PUT /api/deliverer/:id/accept
-   * Moves a delivery from `open` → `closed` and assigns the deliverer to it.
+   * Driver claims an open job AND payment is authorized.
    */
   async acceptJob(req, res) {
     try {
+      const { deliveryId } = req.body;
+      const delivererId = req.params.id;
+
       const delivery = await DelivererService.acceptJob(
-        req.params.id,
-        req.body.deliverer_id
+        deliveryId,
+        delivererId
       );
 
       if (!delivery) {
         return res.status(404).json({ error: 'Delivery not found' });
       }
 
-      res.json({ message: 'Job accepted', delivery });
+      // Stripe authorization now triggered here:
+      const { intent } = await PaymentService.authorizePayment(
+        delivery.deliveryId
+      );
+
+      res.json({
+        message: 'Job accepted and payment authorized',
+        delivery,
+        clientSecret: intent.client_secret, // frontend needs this!
+      });
     } catch (err) {
       console.error('❌ Accept Job Error:', err);
       res.status(400).json({ error: err.message || 'Failed to accept job' });
+    }
+  },
+
+  /**
+   * PUT /api/deliverer/:id/complete
+   * Driver completes the delivery AND payment is captured.
+   */
+  async completeJob(req, res) {
+    try {
+      const { deliveryId } = req.body;
+      const delivery = await DelivererService.completeDelivery(deliveryId);
+
+      if (!delivery) {
+        return res.status(404).json({ error: 'Delivery not found' });
+      }
+
+      // Find associated Payment record
+      const payment = await Payment.findOne({
+        where: { deliveryId: delivery.deliveryId },
+      });
+
+      if (!payment) {
+        return res.status(404).json({
+          error: 'Payment not found for this delivery',
+        });
+      }
+
+      const result = await PaymentService.capturePayment(payment.id);
+
+      res.json({
+        message: 'Delivery completed and payment captured',
+        status: result.status,
+      });
+    } catch (err) {
+      console.error('❌ Complete Job Error:', err);
+      res.status(400).json({ error: err.message || 'Failed to complete job' });
     }
   },
 };

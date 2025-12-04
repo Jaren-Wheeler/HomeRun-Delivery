@@ -10,7 +10,8 @@
  */
 
 const bcrypt = require('bcryptjs');
-const User = require('../models/User');
+const { User } = require('../models');
+const { signToken } = require('../utils/token'); // ⭐ New import
 
 const UserService = {
   /**
@@ -20,14 +21,12 @@ const UserService = {
   async register(data) {
     const { first_name, last_name, email, phone, password, role } = data;
 
-    // Basic validation
     if (!first_name || !last_name || !email || !phone || !password) {
       const err = new Error('All fields are required');
       err.statusCode = 400;
       throw err;
     }
 
-    // Prevent duplicate accounts on same email
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       const err = new Error('User with this email already exists');
@@ -35,28 +34,30 @@ const UserService = {
       throw err;
     }
 
-    // Secure password hashing
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create new user row
     const newUser = await User.create({
       first_name,
       last_name,
       email,
       phone,
       passwordHash,
-      role: role || 'purchaser', // sensible default
+      role: role || 'purchaser',
       isVerified: false,
     });
 
-    // Strip password before returning to client
-    const { passwordHash: _, ...safeUser } = newUser.toJSON();
-    return safeUser;
+    const safeUser = newUser.toJSON();
+    delete safeUser.passwordHash;
+
+    // Auto-login user after registration
+    const token = signToken(newUser);
+
+    return { user: safeUser, token };
   },
 
   /**
    * Authenticate the user by verifying credentials.
-   * Future-ready for JWT token generation.
+   * Now issues JWT token for secure session management.
    */
   async login(data) {
     const { email, password } = data;
@@ -74,7 +75,6 @@ const UserService = {
       throw err;
     }
 
-    // Compare hashed password with user input
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       const err = new Error('Invalid email or password');
@@ -82,9 +82,13 @@ const UserService = {
       throw err;
     }
 
-    // Exclude passwordHash from the response
-    const { passwordHash, ...safeUser } = user.toJSON();
-    return safeUser;
+    const safeUser = user.toJSON();
+    delete safeUser.passwordHash;
+
+    // Generate signed JWT
+    const token = signToken(user);
+
+    return { user: safeUser, token };
   },
 };
 

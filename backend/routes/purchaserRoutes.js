@@ -12,7 +12,7 @@
 
 const express = require('express');
 const router = express.Router();
-const PurchaserController = require('../controllers/PurchaserController');
+const { PurchaserController } = require('../controllers');
 
 /**
  * GET /api/purchaser/:id/pending
@@ -27,5 +27,9 @@ router.get('/:id/pending', PurchaserController.getPurchaserPendingJobs);
  * and no driver assigned yet.
  */
 router.post('/', PurchaserController.createDelivery);
+
+//router.put('/:id/update', PurchaserController.updateExistingJobs);
+
+//router.delete('/:id/delete', PurchaserController.deleteOpenJob);
 
 module.exports = router;

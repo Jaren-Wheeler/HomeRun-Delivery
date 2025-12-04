@@ -11,8 +11,7 @@
  *   to maintain privacy and reduce payload size for map queries.
  */
 
-const Delivery = require('../models/Delivery');
-const User = require('../models/User');
+const { Delivery, User } = require('../models');
 
 const MapsService = {
   /**

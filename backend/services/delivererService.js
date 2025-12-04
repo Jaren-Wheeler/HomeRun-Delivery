@@ -1,28 +1,21 @@
 /**
  * @file delivererService.js
- * Core business logic supporting the **deliverer role**.
- *
- * Responsibilities:
- *  - Query delivery jobs for driver dashboards
- *  - Validate delivery state transitions
- *  - Assign jobs to drivers
- *  - Mark jobs as completed
- *
- * Data access layer responsibilities:
- *   Service → (Business rules + DB logic) → Sequelize Models
+ * Simplified responsibilities:
+ *  - Validate lifecycle
+ *  - Assign deliverer
+ *  - Return delivery for payment lifecycle to proceed
  */
 
-const Delivery = require('../models/Delivery');
-const User = require('../models/User');
+const { Delivery, User } = require('../models');
 
 const DelivererService = {
-  /**
-   * Finds all jobs currently `open` and without a deliverer assigned.
-   * Driver can claim any of these jobs.
-   */
   async getDelivererPendingJobs() {
+    // Deliverer ID not needed in query anymore
     return Delivery.findAll({
-      where: { status: 'open', deliverer_id: null },
+      where: {
+        status: 'open',
+        delivererId: null,
+      },
       include: [
         {
           model: User,
@@ -33,13 +26,9 @@ const DelivererService = {
     });
   },
 
-  /**
-   * Finds completed jobs previously handled by the deliverer.
-   * Useful for profile history & payout reporting.
-   */
   async getDelivererCompletedJobs(delivererId) {
     return Delivery.findAll({
-      where: { deliverer_id: delivererId, status: 'completed' },
+      where: { delivererId, status: 'completed' },
       include: [
         {
           model: User,
@@ -50,10 +39,6 @@ const DelivererService = {
     });
   },
 
-  /**
-   * Transition job status: CLOSED → COMPLETED
-   * Driver may only complete jobs they have already accepted.
-   */
   async completeDelivery(deliveryId) {
     const delivery = await Delivery.findByPk(deliveryId);
     if (!delivery) return null;
@@ -62,30 +47,25 @@ const DelivererService = {
       throw new Error('Delivery must be accepted before completion');
     }
 
-    delivery.status = 'completed';
-    await delivery.save();
-    return delivery;
+    return delivery; // status update handled in PaymentService
   },
 
-  /**
-   * Assigns the deliverer to the job and transitions:
-   *   OPEN → CLOSED
-   * Only valid if delivery has not yet been claimed.
-   */
   async acceptJob(deliveryId, delivererId) {
     const delivery = await Delivery.findByPk(deliveryId);
-    if (!delivery) return null;
-
-    if (delivery.status !== 'open') {
-      throw new Error('Job is not open anymore');
+    if (!delivery) {
+      throw new Error('Delivery not found');
     }
 
-    await delivery.update({
-      deliverer_id: delivererId,
-      status: 'closed',
+    if (delivery.status !== 'open') {
+      throw new Error('Delivery is not open');
+    }
+
+    const updatedDelivery = await delivery.update({
+      delivererId,
+      // status stays "open" here
     });
 
-    return delivery;
+    return updatedDelivery;
   },
 };
 
