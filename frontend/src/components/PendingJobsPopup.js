@@ -85,7 +85,7 @@ const PendingJobsPopup = ({ delivererId, onClose }) => {
             // Now REFRESH both lists from backend
             const pending = await fetch(`http://localhost:5000/api/deliverer/${delivererId}/pending`).then(r => r.json());
             const completed = await fetch(`http://localhost:5000/api/deliverer/${delivererId}/completed`).then(r => r.json());
-            setPendingJobs(prev => prev.filter(job => job.deliveryId !== deliveryId));
+            
             setPendingJobs(pending);
             setCompletedJobs(completed);
 

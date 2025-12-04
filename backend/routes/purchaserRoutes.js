@@ -28,8 +28,8 @@ router.get('/:id/pending', PurchaserController.getPurchaserPendingJobs);
  */
 router.post('/', PurchaserController.createDelivery);
 
-//router.put('/:id/update', PurchaserController.updateExistingJobs);
+router.put('/:id/update', PurchaserController.updateExistingJobs);
 
-//router.delete('/:id/delete', PurchaserController.deleteOpenJob);
+router.delete('/:id/delete', PurchaserController.deleteOpenJob);
 
 module.exports = router;
