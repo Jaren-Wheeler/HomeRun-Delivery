@@ -30,6 +30,7 @@ async function initDB() {
     await sequelize.authenticate();
     console.log('🔌 DB connection established');
 
+    await sequelize.query("PRAGMA journal_mode = WAL;");
     // 3️⃣ Sync AFTER associations are loaded
     await sequelize.sync({
       alter: false,

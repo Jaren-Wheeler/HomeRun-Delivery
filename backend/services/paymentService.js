@@ -28,9 +28,9 @@ const PaymentService = {
     const delivery = await Delivery.findByPk(deliveryId);
     if (!delivery) throw new Error('Delivery not found');
 
-    if (delivery.status !== 'open') {
+    /*if (delivery.status !== 'open') {
       throw new Error('Delivery is not open for payment authorization');
-    }
+    }*/
 
     const amountInCents = Math.round(Number(delivery.proposedPayment) * 100);
 
@@ -52,7 +52,7 @@ const PaymentService = {
 
     // 3 Move delivery to "closed" (Deliverer is now responsible)
     await delivery.update({
-      status: 'closed',
+     // status: 'closed',
       paymentIntentId: intent.id,
       deliverer_id: delivery.delivererId,
     });

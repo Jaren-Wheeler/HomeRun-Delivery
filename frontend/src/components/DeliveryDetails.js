@@ -20,7 +20,7 @@ const DeliveryDetails = ({ delivery }) => {
                 {
                     method: "PUT",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ deliverer_id: Number(delivererId) })
+                    body: JSON.stringify({delivererId: Number(delivererId)})
                 }
             );
 

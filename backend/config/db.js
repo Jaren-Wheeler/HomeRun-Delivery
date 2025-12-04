@@ -44,5 +44,6 @@ if (isProduction) {
     logging: false,
   });
 }
+sequelize.query("PRAGMA journal_mode = WAL;");
 
 module.exports = sequelize;
