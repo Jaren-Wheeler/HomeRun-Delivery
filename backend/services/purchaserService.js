@@ -42,13 +42,13 @@ const PurchaserService = {
    */
   async createDelivery(payload) {
     return Delivery.create({
-      pickupAddress: payload.pickupAddress,
-      dropoffAddress: payload.dropoffAddress,
+      pickupAddress: payload.pickup_address,
+      dropoffAddress: payload.dropoff_address,
       latitude: payload.latitude || null,
       longitude: payload.longitude || null,
-      itemDescription: payload.itemDescription,
-      proposedPayment: payload.proposedPayment,
-      purchaserId: payload.purchaserId,
+      itemDescription: payload.item_description,
+      proposedPayment: payload.proposed_payment,
+      purchaserId: payload.purchaser_id,
       delivererId: null,
       status: 'open',
     });
