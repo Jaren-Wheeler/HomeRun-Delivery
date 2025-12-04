@@ -55,9 +55,11 @@ const PurchaserDashboard = () => {
     return (
         <div
             style={{
-                maxWidth: "900px",
+                width:"90%",
+                minHeight: "100vh",
                 margin: "0 auto",
                 padding: "2rem",
+                background:"#2563eb"
             }}
         >
             <h1
