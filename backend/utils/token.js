@@ -7,16 +7,12 @@ const jwt = require('jsonwebtoken');
 
 /**
  * Generates a signed JWT for the given user.
- *
- * Includes both:
- *  - id  (for authentication)
- *  - role (for authorization)
  */
 const signToken = (user) => {
   return jwt.sign(
     {
       id: user.id,
-      role: user.account_type, // 👈 Add role to JWT payload
+      role: user.role,
     },
     process.env.JWT_SECRET,
     { expiresIn: '7d' }

@@ -16,17 +16,17 @@ const requireAuth = async (req, res, next) => {
     }
 
     const token = header.split(' ')[1];
-    const decoded = verifyToken(token); // { id, role, iat, exp }
+    const decoded = verifyToken(token);
 
-    const user = await User.findByPk(decoded.id);
-    if (!user) {
-      return res.status(401).json({ error: 'Token user no longer exists' });
-    }
+    const user = await User.findByPk(decoded.id, {
+      attributes: ['user_id', 'role'],
+    });
 
-    // Standardized identity passed through backend
+    if (!user) return res.status(401).json({ error: 'User no longer exists' });
+
     req.user = {
-      id: user.id,
-      role: decoded.role, // 👈 Store role retrieved from token
+      id: user.user_id,
+      role: user.role, // 👈 source of truth
     };
 
     next();
