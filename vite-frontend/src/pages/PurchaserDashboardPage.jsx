@@ -5,6 +5,8 @@ import CreatePostingForm from "../components/purchaser/CreatePostingForm";
 import DeliveryCard from "../components/purchaser/DeliveryCard";
 import NavBar from "../components/common/NavBar";
 import PaymentInfoForm from "../components/purchaser/PaymentInfoForm";
+import EditDeliveryCard from "../components/purchaser/EditDeliveryCard";
+
 export default function PurchaserDashboardPage() {
   const { user } = useAuth();
   const purchaserId = user?.id;
@@ -188,23 +190,12 @@ export default function PurchaserDashboardPage() {
         {/* EDIT MODAL (Open jobs) */}
         {/* --------------------------------------------- */}
         {showEditModal && selectedDelivery && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-            <div className="bg-slate-900 p-6 rounded-xl border border-slate-700 w-[420px]">
-              <h2 className="text-lg font-bold mb-3">Edit Delivery #{selectedDelivery.deliveryId}</h2>
-
-              {/* Placeholder — replace with real edit form */}
-              <p className="text-slate-300 mb-4">
-                Editing UI will go here.
-              </p>
-
-              <button
-                className="mt-4 w-full bg-brandBlue px-4 py-2 rounded text-white"
-                onClick={() => setShowEditModal(false)}
-              >
-                Close
-              </button>
-            </div>
-          </div>
+          <EditDeliveryCard
+            delivery={selectedDelivery}
+            onClose={() => setShowEditModal(false)}
+            onUpdated={() => loadDeliveries()}
+            onDeleted={() => loadDeliveries()}
+          />
         )}
 
         {/* --------------------------------------------- */}

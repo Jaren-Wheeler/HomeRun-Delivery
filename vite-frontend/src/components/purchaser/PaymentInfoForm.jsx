@@ -36,7 +36,7 @@ export default function PaymentInfoForm({ delivery, onClose }) {
     const card = elements.getElement(CardElement);
 
     // Confirm payment method on the PaymentIntent
-    const { error, paymentIntent } = await stripe.confirmCardPayment(
+    const { error } = await stripe.confirmCardPayment(
         clientSecret,
         {
             payment_method: {
