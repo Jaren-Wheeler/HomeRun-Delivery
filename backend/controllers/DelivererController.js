@@ -97,7 +97,7 @@ const DelivererController = {
         });
       }
 
-      const result = await PaymentService.capturePayment(payment.id);
+      const result = await PaymentService.capturePayment(payment.paymentId);
 
       res.json({
         message: 'Delivery completed and payment captured',

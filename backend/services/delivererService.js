@@ -61,7 +61,7 @@ const DelivererService = {
 
     const updatedDelivery = await delivery.update({
       delivererId,
-      // status stays "open" here
+      status: 'closed'
     });
 
     return updatedDelivery;
