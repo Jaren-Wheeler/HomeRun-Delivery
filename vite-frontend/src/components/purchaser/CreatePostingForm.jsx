@@ -1,31 +1,32 @@
 import { useState } from 'react';
 import axios from 'axios';
 import deliveryService from '../../api/deliveryService';
+import mapsService from "../../api/mapsService";   // ⭐ USE BACKEND KEY
 
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 const GEOCODE_URL = 'https://maps.googleapis.com/maps/api/geocode/json';
 
+// ⭐ FIXED → Always use the SAME Google key your map uses
 async function geocodeAddress(address) {
-  const key = import.meta.env.VITE_MAPS_KEY;
-  if (!key) {
-    console.warn('Missing Google Maps Key');
+  const res = await mapsService.getMapsKey();
+  const apiKey = res.apiKey || res.key || res.googleKey;
+
+  if (!apiKey) {
+    console.warn("❌ Missing Google Maps API Key from backend", res);
     return null;
   }
 
-  const res = await axios.get(GEOCODE_URL, {
-    params: { address, key },
+  const geo = await axios.get(GEOCODE_URL, {
+    params: { address, key: apiKey },
   });
 
-  if (res.data.status !== 'OK') return null;
+  if (geo.data.status !== "OK") return null;
 
-  const { lat, lng } = res.data.results[0].geometry.location;
-  return { lat, lng };
+  return geo.data.results[0].geometry.location;
 }
 
+
 export default function CreatePostingForm({ purchaserId, onCreated }) {
-  const stripe = useStripe();
-  const elements = useElements();
 
   const [pickupAddress, setPickupAddress] = useState('');
   const [dropoffAddress, setDropoffAddress] = useState('');
@@ -41,20 +42,18 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
     setErrorMsg('');
     setSuccessMsg('');
 
-    if (!stripe || !elements) return;
-
     if (!pickupAddress || !dropoffAddress || !description || !payment) {
       setErrorMsg('All fields are required.');
       return;
     }
 
     setLoading(true);
-
     try {
+      // ⭐ Geocode pickup address BEFORE creating job
       const coords = await geocodeAddress(pickupAddress);
 
-      // 1️⃣ Create Delivery entry in DB
-    const { delivery, clientSecret } = await deliveryService.createDelivery({
+      // 1️⃣ Create DB record
+      const delivery = await deliveryService.createDelivery({
         pickup_address: pickupAddress,
         dropoff_address: dropoffAddress,
         item_description: description,
@@ -68,31 +67,19 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
         throw new Error('Backend did not return a deliveryId');
       }
 
-      // 2️⃣ Create Stripe PaymentIntent
-       if (!clientSecret) {
-        throw new Error('Missing clientSecret from backend response');
-      }
+      // 2️⃣ (Stripe disabled for now)
 
-      // 3️⃣ Confirm Payment Method using Stripe
-      const cardElement = elements.getElement(CardElement);
-      const confirmation = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: { card: cardElement },
-      });
-
-      if (confirmation.error) {
-        throw new Error(confirmation.error.message);
-      }
-
-      // 4️⃣ Success!
-      setSuccessMsg('Delivery created and payment authorized!');
+      // SUCCESS
+      setSuccessMsg('Delivery created successfully!');
       setPickupAddress('');
       setDropoffAddress('');
       setDescription('');
       setPayment('');
-      if (cardElement) cardElement.clear();
+
       if (onCreated) onCreated();
+
     } catch (err) {
-      console.error('Create delivery failed:', err);
+      console.error("Create delivery failed:", err);
       setErrorMsg(err.message || 'Failed to create delivery.');
     } finally {
       setLoading(false);
@@ -106,9 +93,7 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
       </h2>
 
       {errorMsg && <p className="text-red-400 text-sm mb-2">{errorMsg}</p>}
-      {successMsg && (
-        <p className="text-emerald-400 text-sm mb-2">{successMsg}</p>
-      )}
+      {successMsg && <p className="text-emerald-400 text-sm mb-2">{successMsg}</p>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -156,40 +141,9 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
           />
         </div>
 
-        {/* Stripe Card Field Section */}
-        <div className="border-t border-slate-700 pt-3">
-          <label className="text-xs text-slate-300 font-semibold">
-            Payment Method
-          </label>
-
-          <div 
-            className="rounded-lg bg-slate-950 border border-slate-700 px-3 py-3 mt-1"
-            // This style ensures the div is always clickable
-            style={{ pointerEvents: 'auto' }}
-          >
-            <CardElement
-              disabled={loading}
-              options={{
-                style: {
-                  base: {
-                    color: '#fff',
-                    fontSize: '16px',
-                    '::placeholder': { color: '#8899a6' },
-                  },
-                  invalid: { color: '#ff6b6b' },
-                  disabled: {
-                    color: '#8899a6',
-                    backgroundColor: 'rgba(0,0,0,0.1)'
-                  }
-                },
-              }}
-            />
-          </div>
-        </div>
-
         <button
           type="submit"
-          disabled={!stripe || loading}
+          disabled={loading}
           className="w-full mt-2 bg-brandBlue text-white py-2 rounded-lg font-semibold disabled:opacity-50"
         >
           {loading ? 'Processing…' : 'Submit request'}

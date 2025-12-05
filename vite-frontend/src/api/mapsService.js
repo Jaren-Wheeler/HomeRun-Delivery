@@ -1,16 +1,16 @@
-import api from './axiosConfig';
+import api from "./axiosConfig";
 
 const mapsService = {
-  // Get API key for Google Maps initialization
-  getMapsKey: async () => {
-    const response = await api.get('/maps/maps-key');
-    return response.data; // { apiKey: "xxxxx" }
+  // Get backend Google Maps API key
+  async getMapsKey() {
+    const res = await api.get("/maps/maps-key");
+    return res.data;
   },
 
-  // Get open deliveries formatted for map markers
-  getMarkers: async () => {
-    const response = await api.get('/maps/markers');
-    return response.data; // [{ id, pickupAddress, latitude, longitude, ... }]
+  // Get all open delivery markers
+  async getMarkers() {
+    const res = await api.get("/maps/markers");
+    return res.data;
   },
 };
 

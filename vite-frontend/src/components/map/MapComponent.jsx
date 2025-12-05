@@ -1,96 +1,91 @@
-import { useState, useEffect } from 'react';
-import {
-  GoogleMap,
-  Marker,
-  InfoWindow,
-  useLoadScript,
-} from '@react-google-maps/api';
-import mapsService from '../../api/mapsService';
-import DeliveryDetailsCard from '../deliverer/DeliveryDetailsCard';
+import { useState, useEffect } from "react";
+import { GoogleMap, MarkerF, useLoadScript } from "@react-google-maps/api";
+import mapsService from "../../api/mapsService";
 
 const containerStyle = {
-  width: '100%',
-  height: '100%',
+  width: "100%",
+  height: "500px",
 };
 
-export default function MapComponent() {
-  const [markers, setMarkers] = useState([]);
-  const [googleKey, setGoogleKey] = useState(null);
-  const [selectedMarker, setSelectedMarker] = useState(null);
+const GOOGLE_LIBRARIES = ["places"];
 
-  // Load Google Maps API key from backend
+export default function MapComponent() {
+  const [googleKey, setGoogleKey] = useState(null);
+  const [markers, setMarkers] = useState([]);
+
+  /** --------------------------------------------------
+   * 1️⃣ Load Google Maps API key from backend
+   -------------------------------------------------- */
   useEffect(() => {
     async function fetchKey() {
       try {
         const res = await mapsService.getMapsKey();
-        setGoogleKey(res.key);
+
+        const key =
+          res.key ||
+          res.apiKey || // your backend uses this
+          res.googleKey;
+
+        console.log("Backend maps key:", res);
+
+        if (!key) {
+          console.error("❌ Backend did not return a valid key");
+          return;
+        }
+
+        setGoogleKey(key);
       } catch (err) {
-        console.error('Failed fetching maps key:', err);
+        console.error("❌ Failed to load Google Maps key:", err);
       }
     }
+
     fetchKey();
   }, []);
 
-  // Load script after key exists
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: googleKey,
-  });
-
-  // Load open delivery markers from backend
+  /** --------------------------------------------------
+   * 2️⃣ Load marker positions AFTER the key is ready
+   -------------------------------------------------- */
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!googleKey) return;
 
-    async function loadMarkers() {
+    async function fetchMarkers() {
       try {
         const data = await mapsService.getMarkers();
         setMarkers(data);
       } catch (err) {
-        console.error('Loading markers failed:', err);
+        console.error("❌ Failed to load markers:", err);
       }
     }
 
-    loadMarkers();
-  }, [isLoaded]);
+    fetchMarkers();
+  }, [googleKey]);
 
-  if (!googleKey)
-    return <p className="text-center text-gray-400">Loading key…</p>;
-  if (!isLoaded)
-    return <p className="text-center text-gray-400">Loading map…</p>;
+  /** --------------------------------------------------
+   * 3️⃣ Load Google Maps script (must NOT reload)
+   -------------------------------------------------- */
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: googleKey || "",
+    libraries: GOOGLE_LIBRARIES,
+  });
+
+  if (!googleKey) return <p className="text-white">Loading maps key…</p>;
+  if (!isLoaded) return <p className="text-white">Loading Google Maps…</p>;
 
   return (
-    <div className="w-full h-full relative">
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        zoom={10}
-        center={{ lat: 53.5461, lng: -113.4938 }} // Edmonton default
-      >
-        {/* Markers */}
-        {markers.map((m) => (
-          <Marker
+    <GoogleMap
+      mapContainerStyle={containerStyle}
+      center={{ lat: 52.268, lng: -113.811 }} // Red Deer center
+      zoom={12}
+    >
+      {markers.map((m) =>
+        m.latitude && m.longitude ? (
+          <MarkerF
             key={m.delivery_id}
-            position={{
-              lat: m.latitude ?? 53.5461,
-              lng: m.longitude ?? -113.4938,
-            }}
-            onClick={() => setSelectedMarker(m)}
+            position={{ lat: m.latitude, lng: m.longitude }}
+            title={m.item_description}
           />
-        ))}
-
-        {/* Dark Popup */}
-        {selectedMarker && (
-          <InfoWindow
-            position={{
-              lat: selectedMarker.latitude,
-              lng: selectedMarker.longitude,
-            }}
-            onCloseClick={() => setSelectedMarker(null)}
-          >
-            <div className="p-0 m-0">
-              <DeliveryDetailsCard delivery={selectedMarker} />
-            </div>
-          </InfoWindow>
-        )}
-      </GoogleMap>
-    </div>
+        ) : null
+      )}
+    </GoogleMap>
   );
 }

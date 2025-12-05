@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import deliveryService from '../api/deliveryService';
 import NavBar from '../components/common/NavBar';
-
-import DeliveryDetailsCard from '../components/deliverer/DeliveryDetailsCard';
-import PendingJobList from '../components/deliverer/PendingJobList';
+import PendingJobsList from '../components/deliverer/PendingJobList';
+import MapComponent from '../components/map/MapComponent'; // ⭐ Use your map component
 
 export default function DelivererDashboardPage() {
   const { user } = useAuth();
   const delivererId = user?.id;
+
   const [openJobs, setOpenJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showPending, setShowPending] = useState(false);
@@ -16,6 +16,7 @@ export default function DelivererDashboardPage() {
   async function loadOpenJobs() {
     if (!delivererId) return;
     setLoading(true);
+
     try {
       const jobs = await deliveryService.getPendingDelivererJobs(delivererId);
       setOpenJobs(jobs || []);
@@ -28,7 +29,6 @@ export default function DelivererDashboardPage() {
 
   useEffect(() => {
     loadOpenJobs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [delivererId]);
 
   return (
@@ -36,6 +36,7 @@ export default function DelivererDashboardPage() {
       <NavBar />
 
       <main className="max-w-6xl mx-auto px-6 pb-10 pt-6 space-y-6">
+        {/* Header */}
         <header className="flex justify-between items-end">
           <div>
             <h1 className="text-2xl font-bold">Deliverer Dashboard</h1>
@@ -52,7 +53,12 @@ export default function DelivererDashboardPage() {
           </button>
         </header>
 
-        {/* JOB LIST */}
+        {/* MAP SECTION */}
+        <div className="w-full h-[500px] rounded-xl overflow-hidden border border-slate-700 shadow-lg">
+          <MapComponent />
+        </div>
+
+        {/* Optional list under map */}
         {loading ? (
           <p className="text-slate-400 text-sm">Loading available jobs…</p>
         ) : openJobs.length === 0 ? (
@@ -60,16 +66,15 @@ export default function DelivererDashboardPage() {
             No open jobs right now. Check again soon.
           </p>
         ) : (
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {openJobs.map((job) => (
-              <DeliveryDetailsCard key={job.delivery_id} delivery={job} />
-            ))}
-          </div>
+          <p className="text-slate-400 text-xs">
+            Showing {openJobs.length} jobs on the map
+          </p>
         )}
       </main>
 
+      {/* Deliverer's “Your Jobs” modal */}
       {showPending && (
-        <PendingJobsPopup
+        <PendingJobList
           delivererId={delivererId}
           onClose={() => setShowPending(false)}
         />
