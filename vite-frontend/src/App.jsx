@@ -6,8 +6,8 @@ import RegisterPage from './pages/RegisterPage';
 import PurchaserDashboardPage from './pages/PurchaserDashboardPage';
 import DelivererDashboardPage from './pages/DelivererDashboardPage';
 
-import ProtectedRoute from './router/ProtectedRoute';
-import RoleRoute from './router/RoleRoute';
+import ProtectedRoute from '../router/ProtectedRoute.jsx';
+import RoleRoute from '../router/RoleRoute.jsx';
 
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
