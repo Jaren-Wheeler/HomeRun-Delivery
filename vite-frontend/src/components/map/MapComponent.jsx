@@ -8,9 +8,7 @@ import {
 
 import DeliveryDetailsCard from "../deliverer/DeliveryDetailsCard";
 import RadiusSelector from "./RadiusSelector";
-import { loadGoogleMaps } from "../../lib/loadGoogleMaps"; // we'll create this
-
-
+import { loadGoogleMaps } from "../../lib/loadGoogleMaps";
 
 export default function MapComponent({ searchCenter }) {
   const [apiKey, setApiKey] = useState(null);
@@ -19,6 +17,7 @@ export default function MapComponent({ searchCenter }) {
   const [deliveries, setDeliveries] = useState([]);
   const [markerPositions, setMarkerPositions] = useState([]);
   const [activeMarker, setActiveMarker] = useState(null);
+
   const [autocomplete, setAutocomplete] = useState(null);
   const [radius, setRadius] = useState(null);
 
@@ -27,9 +26,9 @@ export default function MapComponent({ searchCenter }) {
     lng: -79.3832,
   });
 
-  //
-  // 1. Load API key
-  //
+  // ----------------------------------------------------------
+  // 1. Load API Key
+  // ----------------------------------------------------------
   useEffect(() => {
     fetch("http://localhost:5000/api/maps/maps-key")
       .then((res) => res.json())
@@ -39,22 +38,20 @@ export default function MapComponent({ searchCenter }) {
       .catch((err) => console.error("Failed to load key:", err));
   }, []);
 
-  //
-  // 2. Load Google Maps script manually (NO DUPLICATES)
-  //
+  // ----------------------------------------------------------
+  // 2. Load Google Maps Script
+  // ----------------------------------------------------------
   useEffect(() => {
     if (!apiKey) return;
 
     loadGoogleMaps(apiKey)
-      .then(() => {
-        setMapsReady(true);
-      })
+      .then(() => setMapsReady(true))
       .catch((err) => console.error("Google Maps failed:", err));
   }, [apiKey]);
 
-  //
-  // 3. Load deliveries from backend
-  //
+  // ----------------------------------------------------------
+  // 3. Load Deliveries from backend
+  // ----------------------------------------------------------
   useEffect(() => {
     fetch("http://localhost:5000/api/maps/markers")
       .then((r) => r.json())
@@ -62,9 +59,9 @@ export default function MapComponent({ searchCenter }) {
       .catch((err) => console.error("Error loading deliveries:", err));
   }, []);
 
-  //
-  // 4. Geocode all markers once maps + deliveries are ready
-  //
+  // ----------------------------------------------------------
+  // 4. Geocode Deliveries to Marker Positions
+  // ----------------------------------------------------------
   useEffect(() => {
     if (!mapsReady || !deliveries.length) return;
 
@@ -97,9 +94,9 @@ export default function MapComponent({ searchCenter }) {
     geocodeAll();
   }, [mapsReady, deliveries]);
 
-  //
-  // 5. Handle Place Autocomplete
-  //
+  // ----------------------------------------------------------
+  // 5. Autocomplete Handlers
+  // ----------------------------------------------------------
   const onAutocompleteLoaded = (ac) => setAutocomplete(ac);
 
   const onPlaceChanged = () => {
@@ -112,9 +109,9 @@ export default function MapComponent({ searchCenter }) {
     });
   };
 
-  //
-  // 6. Radius filter (unchanged logic)
-  //
+  // ----------------------------------------------------------
+  // 6. Filter Markers by Radius
+  // ----------------------------------------------------------
   const filteredMarkers = markerPositions.filter((m) => {
     if (!radius) return true;
 
@@ -132,37 +129,40 @@ export default function MapComponent({ searchCenter }) {
     return distance <= radius;
   });
 
-  //
-  // Loading states
-  //
+  // ----------------------------------------------------------
+  // Loading States
+  // ----------------------------------------------------------
   if (!apiKey) return <div>Loading Google Maps API key…</div>;
   if (!mapsReady) return <div>Loading Google Maps…</div>;
 
+  // ----------------------------------------------------------
+  // RENDER
+  // ----------------------------------------------------------
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
-      {/* Floating Search + Radius Box */}
+    <div className="w-full h-full relative">
+
+        {/* Floating Search Bar */}
       <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          padding: "10px",
-          display: "flex",
-          justifyContent: "center",
-          zIndex: 10,
-        }}
+        className="
+          absolute top-0 left-0 w-full 
+          flex justify-center 
+          pt-4 
+          z-50 
+          overflow-visible
+        "
       >
         <div
-          style={{
-            display: "flex",
-            gap: "12px",
-            padding: "10px",
-            background: "white",
-            borderRadius: "8px",
-            boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-          }}
+          className="
+            flex gap-3 
+            bg-white 
+            shadow-lg 
+            rounded-xl 
+            px-4 py-3
+            items-center
+            z-50 
+          "
         >
+          {/* Search Input */}
           <Autocomplete
             onLoad={onAutocompleteLoaded}
             onPlaceChanged={onPlaceChanged}
@@ -170,12 +170,16 @@ export default function MapComponent({ searchCenter }) {
             <input
               type="text"
               placeholder="Search cities…"
-              style={{
-                width: "240px",
-                padding: "8px",
-                borderRadius: "6px",
-                border: "1px solid #ccc",
-              }}
+              className="
+                w-60 
+                px-3 py-2 
+                rounded-md 
+                border border-gray-300
+                focus:outline-none 
+                focus:ring-2 
+                focus:ring-blue-500
+                text-gray-900
+              "
             />
           </Autocomplete>
 
@@ -183,7 +187,8 @@ export default function MapComponent({ searchCenter }) {
         </div>
       </div>
 
-      {/* Actual Map */}
+
+      {/* MAP */}
       <GoogleMap
         mapContainerStyle={{ width: "100%", height: "100%" }}
         center={mapCenter}
