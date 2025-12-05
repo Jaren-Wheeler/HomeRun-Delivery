@@ -9,12 +9,11 @@
 const { Delivery, User } = require('../models');
 
 const DelivererService = {
-  async getDelivererPendingJobs() {
-    // Deliverer ID not needed in query anymore
+  async getDelivererPendingJobs(delivererId) {
     return Delivery.findAll({
       where: {
-        status: 'open',
-        delivererId: null,
+        status: 'closed',
+        delivererId: delivererId,
       },
       include: [
         {
