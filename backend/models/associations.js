@@ -1,10 +1,9 @@
 /**
  * @file associations.js
- * Defines all Sequelize model relationships in one place.
+ * Central source of all Sequelize model relationships.
  *
- * Centralizing associations prevents duplicate alias errors,
- * improves maintainability, and ensures models load correctly
- * before sequelize.sync() is executed.
+ * This file must be imported BEFORE sequelize.sync()
+ * to ensure foreign keys and aliases are applied properly.
  */
 
 const User = require('./User');
@@ -12,47 +11,52 @@ const Delivery = require('./Delivery');
 const Payment = require('./Payment');
 
 /**
- * USER ↔ DELIVERY (Purchaser relationship)
+ * USER ↔ DELIVERY
+ * Purchaser Relationship
  *
- * A purchaser (user) can create multiple delivery requests.
- * If the purchaser account is deleted, we remove their requests.
+ * - One purchaser can create many delivery jobs.
+ * - If a buyer deletes their account → delete their deliveries.
+ * - Uses Delivery.purchaserId field.
  */
 User.hasMany(Delivery, {
   as: 'purchasedDeliveries',
-  foreignKey: 'purchaser_id',
+  foreignKey: 'purchaserId', // camelCase field from Delivery model
   onDelete: 'CASCADE',
 });
 Delivery.belongsTo(User, {
   as: 'Purchaser',
-  foreignKey: 'purchaser_id',
+  foreignKey: 'purchaserId',
 });
 
 /**
- * USER ↔ DELIVERY (Deliverer relationship)
+ * USER ↔ DELIVERY
+ * Deliverer Relationship
  *
- * A deliverer can be assigned to multiple jobs.
- * If a deliverer account disappears, we keep the job record
- * but set the deliverer to NULL since another driver could take over.
+ * - One deliverer can be assigned multiple jobs.
+ * - If deliverer account deleted → do not delete job
+ *   Instead, set delivererId to null so another driver can accept it.
  */
 User.hasMany(Delivery, {
   as: 'assignedDeliveries',
-  foreignKey: 'deliverer_id',
+  foreignKey: 'delivererId',
   onDelete: 'SET NULL',
 });
 Delivery.belongsTo(User, {
   as: 'Deliverer',
-  foreignKey: 'deliverer_id',
+  foreignKey: 'delivererId',
 });
 
 /**
  * DELIVERY ↔ PAYMENT
+ * One-to-One Payment Lifecycle
  *
- * A delivery can only have one associated payment.
- * If a delivery is removed, its payment should be removed too.
+ * - A delivery has EXACTLY one Stripe payment linked.
+ * - Remove payment automatically if delivery removed.
+ * - Uses Payment.deliveryId field.
  */
 Delivery.hasOne(Payment, {
   as: 'payment',
-  foreignKey: 'deliveryId', // matches Payment model
+  foreignKey: 'deliveryId',
   onDelete: 'CASCADE',
 });
 Payment.belongsTo(Delivery, {

@@ -64,6 +64,14 @@ const User = sequelize.define(
       defaultValue: 'purchaser',
     },
 
+    /** Stripe */
+    stripeCustomerId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: 'stripe_customer_id',
+      comment: 'Stripe customer id for saved cards',
+    },
+
     /** Reputation */
     isVerified: {
       type: DataTypes.BOOLEAN,
@@ -81,7 +89,7 @@ const User = sequelize.define(
   {
     timestamps: true,
     tableName: 'Users',
-    underscored: true, // converts createdAt → created_at in DB
+    underscored: true,
 
     /**
      * Allows code to reference user.id while DB keeps user_id.

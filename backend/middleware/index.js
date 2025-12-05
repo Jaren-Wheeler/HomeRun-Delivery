@@ -8,8 +8,10 @@
 
 const requireAuth = require('./authMiddleware');
 const requireDeliverer = require('./deliveryAuth');
+const requirePurchaser = require('./purchaserAuth');
 
 module.exports = {
   requireAuth,
   requireDeliverer,
+  requirePurchaser,
 };

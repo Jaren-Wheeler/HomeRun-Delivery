@@ -1,27 +1,44 @@
 import React from 'react';
-import {BrowserRouter as Router, Routes, Route, Link} from 'react-router-dom';
-import Login from './pages/Login';
-import CreateAccount from './pages/CreateAccount';
-import PurchaserDashboard from './pages/PurchaserDashboard';
-import DelivererDashboard from './pages/DelivererDashboard';
-import Homepage from './pages/Homepage';
-import Payment from './pages/Payment';
-import NavBar from './components/NavBar';
-function App() {
-  return (
-  
-    <Router>
-    {/* <NavBar></NavBar> */}
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import LoginPage from './pages/Login';
+import CreateAccountPage from './pages/CreateAccount';
+import PurchaserDashboardPage from './pages/PurchaserDashboard';
+import DelivererDashboardPage from './pages/DelivererDashboard';
+import ProtectedRoute from './router/ProtectedRoute';
+import RoleRoute from './router/RoleRoute';
 
+export default function App() {
+  return (
+    <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/create-account" element={<CreateAccount />} />
-        <Route path="/purchaser-dashboard" element={<PurchaserDashboard />} />
-        <Route path="/deliverer-dashboard" element={<DelivererDashboard />} />
-         {/*<Route path="/payment" element={<Payment />} />*/}
+        {/* Public Routes */}
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/create-account" element={<CreateAccountPage />} />
+
+        {/* Purchaser-only */}
+        <Route
+          path="/purchaser-dashboard"
+          element={
+            <ProtectedRoute>
+              <RoleRoute role="purchaser">
+                <PurchaserDashboardPage />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Deliverer-only */}
+        <Route
+          path="/deliverer-dashboard"
+          element={
+            <ProtectedRoute>
+              <RoleRoute role="deliverer">
+                <DelivererDashboardPage />
+              </RoleRoute>
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </Router>
   );
 }
-
-export default App;

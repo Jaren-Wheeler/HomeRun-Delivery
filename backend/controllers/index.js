@@ -4,8 +4,8 @@
  */
 
 const UserController = require('./UserController');
-const DelivererController = require('./delivererController');
-const MapsController = require('./MapsController');
+const DelivererController = require('./DelivererController');
+const MapsController = require('./mapsController');
 const PaymentController = require('./PaymentController');
 const PurchaserController = require('./PurchaserController');
 

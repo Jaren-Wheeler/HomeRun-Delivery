@@ -1,11 +1,8 @@
 /**
  * @file PurchaserController.js
- * Handles all customer-side delivery interactions:
- *  - Create new delivery job requests
- *  - Track their pending (unclaimed) delivery jobs
- *
- * Delegates business logic to PurchaserService:
- *   Controller → (HTTP handling) → Service → (DB + business rules)
+ * Handles customer-side delivery interactions:
+ *  - Create new delivery job requests (now includes card setup + Stripe lock)
+ *  - Track all delivery posts in "open" state
  */
 
 const PurchaserService = require('../services/purchaserService');
@@ -13,10 +10,7 @@ const PurchaserService = require('../services/purchaserService');
 const PurchaserController = {
   /**
    * GET /api/purchaser/:id/pending
-   * Shows active delivery jobs posted by the purchaser where:
-   *    - No driver has accepted yet
-   *    - Status remains `open`
-   * Useful for UI tracking and cancellation flows.
+   * Returns all OPEN delivery jobs for the purchaser.
    */
   async getPurchaserPendingJobs(req, res) {
     try {
@@ -25,74 +19,71 @@ const PurchaserController = {
       );
       res.json(jobs);
     } catch (err) {
-      console.error('❌ Create Delivery Error:', err); // FULL ERROR LOG
-      res.status(500).json({
-        error: err.message,
-        name: err.name,
-        details: err.errors || null,
-      });
+      console.error('❌ Pending Jobs Error:', err);
+      res.status(500).json({ error: err.message });
     }
   },
 
   /**
    * POST /api/purchaser
-   * Creates a new delivery job request. Starts lifecycle at:
-   *      purchaser → "open" → (deliverer accepts) → "closed" → "completed"
-   * Requires payload validation on frontend/API-level before submission.
+   *
+   * 🎯 BIG UPDATE:
+   * When a delivery is created, we now:
+   *  1) Create Delivery row in DB
+   *  2) Create Stripe PaymentIntent with manual capture
+   *  3) Return BOTH:
+   *        - delivery
+   *        - clientSecret (FE must confirm card entry)
    */
   async createDelivery(req, res) {
     try {
-      console.log('📦 Incoming Body:', req.body); // LOG PAYLOAD FIRST
+      console.log('📦 Incoming Delivery Create:', req.body);
 
-      const newDelivery = await PurchaserService.createDelivery(req.body);
+      // Updated service returns: { delivery, clientSecret }
+      const result = await PurchaserService.createDelivery(req.body);
 
-      return res.status(201).json(newDelivery);
+      // Ensure deliveryId is exposed exactly as frontend expects
+      return res.status(201).json({
+        deliveryId: result.delivery.delivery_id || result.delivery.deliveryId,
+        delivery: result.delivery,
+        clientSecret: result.clientSecret,
+      });
     } catch (err) {
-      console.error('❌ Create Delivery Error:', {
-        message: err.message,
-        name: err.name,
-        details: err.errors?.map((e) => e.message) || null,
-      });
-
-      return res.status(500).json({
-        error: err.message,
-        details: err.errors?.map((e) => e.message) || null,
-      });
+      console.error('❌ Create Delivery Error:', err);
+      return res.status(500).json({ error: err.message });
     }
   },
 
+  /**
+   * Modify an existing delivery request
+   * (currently only for open requests)
+   */
   async updateExistingJobs(req, res) {
     try {
       const { id } = req.params;
-      const updateData = req.body;
-
-      const success = await PurchaserService.updateDelivery(id, updateData);
-
-      if (!success) {
+      const success = await PurchaserService.updateDelivery(id, req.body);
+      if (!success)
         return res.status(404).json({ error: 'Delivery not found' });
-      }
-
-      return res.json({ message: 'Delivery updated successfully' });
-    } catch (error) {
-      console.error('Error updating delivery:', error);
+      res.json({ message: 'Delivery updated successfully' });
+    } catch (err) {
+      console.error('Error updating delivery:', err);
       res.status(500).json({ error: 'Failed to update delivery' });
     }
   },
 
+  /**
+   * Delete an open delivery job
+   */
   async deleteOpenJob(req, res) {
     try {
       const { id } = req.params;
-
       const deleted = await PurchaserService.deleteDelivery(id);
-
-      if (!deleted) {
+      if (!deleted)
         return res.status(404).json({ error: 'Delivery not found' });
-      }
-
-      return res.json({ message: 'Delivery deleted successfully' });
-    } catch (error) {
-      console.error('Error deleting delivery:', error);
-      return res.status(500).json({ error: 'Failed to delete delivery' });
+      res.json({ message: 'Delivery deleted successfully' });
+    } catch (err) {
+      console.error('Error deleting delivery:', err);
+      res.status(500).json({ error: 'Failed to delete delivery' });
     }
   },
 };

@@ -1,24 +1,18 @@
 /**
  * @file purchaserService.js
- * Core business logic supporting the **purchaser role**.
- *
- * Responsibilities:
- *  - Create new delivery job requests
- *  - Retrieve currently active (unclaimed) delivery jobs
- *
- * Delivery lifecycle overview:
- *    Purchaser creates job → status: `open` → (deliverer accepts) → `closed`
- *    → (job completed) → `completed`
- *
- * NOTE:
- *   Purchasers do not directly complete deliveries — that’s owned by deliverers.
+ * Handles business logic for purchasers:
+ * - Create a delivery job + initialize Stripe PaymentIntent (manual capture)
+ * - Get dashboard list of open deliveries
+ * - Update or delete own open deliveries
  */
-const { Delivery } = require('../models');
+
+const { Delivery, User, Payment } = require('../models');
+const stripe = require('../config/stripe');
 
 const PurchaserService = {
   /**
-   * Returns open delivery jobs that were created by this purchaser.
-   * Used in UI to show outstanding requests that have not been picked up.
+   * Purchaser dashboard list:
+   * Only return jobs still waiting for a driver (open)
    */
   async getPurchaserPendingJobs(purchaserId) {
     return Delivery.findAll({
@@ -30,44 +24,96 @@ const PurchaserService = {
   },
 
   /**
-   * Creates a new delivery request.
-   * Initializes delivery lifecycle at `open` state and assigns
-   * the purchaser as the job owner.
+   * Create Delivery + Stripe PaymentIntent
    *
-   * Required payload fields (validated upstream):
-   *  - pickup_address, dropoff_address
-   *  - item_description
-   *  - proposed_payment (CAD)
-   *  - purchaser_id (FK)
+   * Lifecycle:
+   *  - Creates DB delivery row (status: open)
+   *  - Creates PaymentIntent with manual capture (auth only)
+   *  - Saves the Payment + Intent ID in DB
+   *  - Returns:
+   *      delivery: Delivery model instance
+   *      clientSecret: string needed by Stripe Elements
    */
   async createDelivery(payload) {
-    return Delivery.create({
+    // ------------------------
+    // Validate required fields
+    // ------------------------
+    if (!payload.purchaser_id) {
+      throw new Error('Purchaser ID missing in request');
+    }
+    if (!payload.proposed_payment) {
+      throw new Error('Payment amount missing');
+    }
+
+    // 1 Create delivery in DB
+    const delivery = await Delivery.create({
       pickupAddress: payload.pickup_address,
       dropoffAddress: payload.dropoff_address,
-      latitude: payload.latitude || null,
-      longitude: payload.longitude || null,
+      latitude: payload.latitude ?? null,
+      longitude: payload.longitude ?? null,
       itemDescription: payload.item_description,
       proposedPayment: payload.proposed_payment,
       purchaserId: payload.purchaser_id,
-      delivererId: null,
       status: 'open',
     });
+
+    // 2 Ensure Stripe customer exists for purchaser
+    const purchaser = await User.findByPk(payload.purchaser_id);
+    if (!purchaser) {
+      throw new Error('Purchaser not found');
+    }
+    if (!purchaser.stripeCustomerId) {
+      throw new Error('User does not have a Stripe customer ID setup');
+    }
+
+    // Stripe requires cents
+    const amountInCents = Math.round(Number(delivery.proposedPayment) * 100);
+
+    // 3 Create PaymentIntent at Stripe
+    const intent = await stripe.paymentIntents.create({
+      amount: amountInCents,
+      currency: 'cad',
+      capture_method: 'manual', // Authorization only
+      customer: purchaser.stripeCustomerId,
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      metadata: {
+        deliveryId: delivery.deliveryId,
+        purchaserId: purchaser.user_id, // correct column name
+      },
+    });
+
+    // 4 Payment tracking row in DB
+    await Payment.create({
+      deliveryId: delivery.deliveryId,
+      amount: delivery.proposedPayment,
+      stripePaymentIntentId: intent.id,
+      status: intent.status,
+    });
+
+    // Save PaymentIntent ID reference in the delivery table
+    await delivery.update({
+      paymentIntentId: intent.id,
+    });
+
+    // 5 Return format FE requires
+    return {
+      delivery,
+      clientSecret: intent.client_secret,
+    };
   },
 
   async updateDelivery(id, updateData) {
     const result = await Delivery.update(updateData, {
       where: { deliveryId: id },
     });
-
-    return result[0] > 0; // returns true if something was updated
+    return result[0] > 0;
   },
 
   async deleteDelivery(id) {
-    const deleted = await Delivery.destroy({
-      where: { deliveryId: id },
-    });
-
-    return deleted > 0; // true if a row was deleted
+    const deleted = await Delivery.destroy({ where: { deliveryId: id } });
+    return deleted > 0;
   },
 };
 

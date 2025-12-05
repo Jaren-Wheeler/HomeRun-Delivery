@@ -1,48 +1,50 @@
 /**
  * @file paymentService.js
- * Manages the complete **payment lifecycle** for deliveries via Stripe.
+ * Handles Stripe PaymentIntent lifecycle for deliveries.
  *
- * Lifecycle mapping:
- *  Purchaser creates job → status: "open"
- *  Deliverer accepts job → Stripe auth → status: "closed"
- *  Deliverer completes job → Stripe capture → "completed"
- *  If canceled/opened back up → status resets to "open"
- *
- * All delivery state updates go through this service for consistency.
+ * Lifecycle:
+ *  1) open → accept → CLOSED (Stripe auth)
+ *  2) closed → complete → COMPLETED (capture)
+ *  3) cancel → back to OPEN (authorization voided)
  */
 
 const stripe = require('../config/stripe');
-const { Delivery, Payment } = require('../models');
+const { Delivery, Payment, User } = require('../models');
 
 const PaymentService = {
   /**
-   * Called when a deliverer ACCEPTS a job
-   *  - Stripe PaymentIntent is created with manual capture enabled.
-   *  - A Payment record is stored in DB.
-   *  - Delivery status updates to "closed"
-   *
-   * @param {number} deliveryId
-   * @returns {object} - intent + payment record
+   * Authorize payment once deliverer accepts job.
+   * Creates Stripe PaymentIntent with manual capture.
    */
   async authorizePayment(deliveryId) {
-    const delivery = await Delivery.findByPk(deliveryId);
+    const delivery = await Delivery.findByPk(deliveryId, {
+      include: [{ model: User, as: 'Purchaser' }],
+    });
     if (!delivery) throw new Error('Delivery not found');
 
     if (delivery.status !== 'open') {
       throw new Error('Delivery is not open for payment authorization');
     }
 
+    const purchaser = delivery.Purchaser;
+    if (!purchaser) throw new Error('Purchaser not linked to delivery');
+
     const amountInCents = Math.round(Number(delivery.proposedPayment) * 100);
 
-    // 1 Create a Stripe PaymentIntent (manual capture)
+    // Create PaymentIntent linked to purchaser's Stripe customer
     const intent = await stripe.paymentIntents.create({
       amount: amountInCents,
       currency: 'cad',
       capture_method: 'manual',
-      metadata: { deliveryId },
+      customer: purchaser.stripeCustomerId || undefined, // ⭐ NEW
+      metadata: {
+        deliveryId,
+        purchaserId: delivery.purchaserId,
+        delivererId: delivery.delivererId,
+      },
     });
 
-    // 2 Create DB Payment record
+    // Log payment row in DB
     await Payment.create({
       deliveryId,
       amount: delivery.proposedPayment,
@@ -50,42 +52,32 @@ const PaymentService = {
       status: intent.status,
     });
 
-    // 3 Move delivery to "closed" (Deliverer is now responsible)
+    // Delivery now closed (driver responsible)
     await delivery.update({
       status: 'closed',
       paymentIntentId: intent.id,
-      deliverer_id: delivery.delivererId,
+      delivererId: delivery.delivererId,
     });
 
     return { intent };
   },
 
   /**
-   * Called when a deliverer COMPLETES a job
-   *  - Stripe capture finalizes the payment
-   *  - DB updates:
-   *      payment.status → Stripe result
-   *      delivery.status → "completed"
-   *
-   * @param {number} paymentId
-   * @returns {object} - Stripe capture result
+   * Final charge when delivery completed.
    */
   async capturePayment(paymentId) {
     const payment = await Payment.findByPk(paymentId);
     if (!payment) throw new Error('Payment not found');
 
-    // 1 Capture funds in Stripe
     const result = await stripe.paymentIntents.capture(
       payment.stripePaymentIntentId
     );
 
-    // 2 Update Payment record
     await payment.update({
       status: result.status,
       capturedAt: new Date(),
     });
 
-    // 3 Delivery lifecycle complete 🎉
     await Delivery.update(
       { status: 'completed' },
       { where: { deliveryId: payment.deliveryId } }
@@ -95,27 +87,18 @@ const PaymentService = {
   },
 
   /**
-   * Called if a job is canceled before completion
-   *  - Cancels the Stripe authorization
-   *  - Payment status updated accordingly
-   *  - Delivery becomes available again
-   *
-   * @param {number} paymentId
-   * @returns {object} - Stripe cancellation result
+   * Cancel an authorized payment — job reopens.
    */
   async cancelPayment(paymentId) {
     const payment = await Payment.findByPk(paymentId);
     if (!payment) throw new Error('Payment not found');
 
-    // 1 Cancel Stripe payment intent
     const result = await stripe.paymentIntents.cancel(
       payment.stripePaymentIntentId
     );
 
-    // 2 Update Payment record
     await payment.update({ status: result.status });
 
-    // 3 Make job available again
     await Delivery.update(
       { status: 'open', delivererId: null, paymentIntentId: null },
       { where: { deliveryId: payment.deliveryId } }

@@ -1,35 +1,57 @@
 /**
  * @file purchaserRoutes.js
- * REST API endpoints for users operating as **purchasers**:
- *
- * Responsibilities (Purchaser Role):
- *  - Create new delivery job requests
- *  - Track unclaimed ("open") deliveries they have created
- *
- * All business logic is delegated to PurchaserController to maintain
- * separation of concerns and a clean, scalable backend architecture.
+ * REST API endpoints for purchaser role
  */
 
 const express = require('express');
 const router = express.Router();
 const { PurchaserController } = require('../controllers');
+const { requireAuth, requirePurchaser } = require('../middleware');
+
+console.log('PurchaserController:', PurchaserController);
+console.log('requireAuth:', typeof requireAuth);
+console.log('requirePurchaser:', typeof requirePurchaser);
+
+/**
+ * POST /api/purchaser/create-with-intent
+ * Creates delivery AND initializes Stripe PaymentIntent
+ */
+router.post(
+  '/create-with-intent',
+  requireAuth,
+  requirePurchaser,
+  PurchaserController.createDelivery
+);
 
 /**
  * GET /api/purchaser/:id/pending
- * Lists active delivery jobs created by this purchaser
- * that are still waiting for a driver to claim them.
+ * Returns delivery posts made by this purchaser
  */
-router.get('/:id/pending', PurchaserController.getPurchaserPendingJobs);
+router.get(
+  '/:id/pending',
+  requireAuth,
+  requirePurchaser,
+  PurchaserController.getPurchaserPendingJobs
+);
 
 /**
- * POST /api/purchaser
- * Creates a new delivery request with `status: open`
- * and no driver assigned yet.
+ * PUT /api/purchaser/:id/update
  */
-router.post('/', PurchaserController.createDelivery);
+router.put(
+  '/:id/update',
+  requireAuth,
+  requirePurchaser,
+  PurchaserController.updateExistingJobs
+);
 
-router.put('/:id/update', PurchaserController.updateExistingJobs);
-
-router.delete('/:id/delete', PurchaserController.deleteOpenJob);
+/**
+ * DELETE /api/purchaser/:id/delete
+ */
+router.delete(
+  '/:id/delete',
+  requireAuth,
+  requirePurchaser,
+  PurchaserController.deleteOpenJob
+);
 
 module.exports = router;
