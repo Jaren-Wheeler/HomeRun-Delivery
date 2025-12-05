@@ -44,34 +44,25 @@ const DelivererController = {
    * Driver claims an open job AND payment is authorized.
    */
   async acceptJob(req, res) {
-    try {
-      const { deliveryId } = req.body;
-      const delivererId = req.params.id;
+  try {
+    const delivererId = req.params.id;
+    const { deliveryId } = req.body;
 
-      const delivery = await DelivererService.acceptJob(
-        deliveryId,
-        delivererId
-      );
+    const result = await DelivererService.acceptJob(delivererId, deliveryId);
 
-      if (!delivery) {
-        return res.status(404).json({ error: 'Delivery not found' });
-      }
+    return res.json({
+      message: "Job accepted and payment authorized",
+      clientSecret: result.clientSecret,
+      payment: result.payment
+    });
 
-      // Stripe authorization now triggered here:
-      const { intent } = await PaymentService.authorizePayment(
-        delivery.deliveryId
-      );
+  } catch (err) {
+    console.error("❌ Accept Job Error:", err);
+    return res.status(400).json({ error: err.message });
+  }
+},
 
-      res.json({
-        message: 'Job accepted and payment authorized',
-        delivery,
-        clientSecret: intent.client_secret, // frontend needs this!
-      });
-    } catch (err) {
-      console.error('❌ Accept Job Error:', err);
-      res.status(400).json({ error: err.message || 'Failed to accept job' });
-    }
-  },
+
 
   /**
    * PUT /api/deliverer/:id/complete

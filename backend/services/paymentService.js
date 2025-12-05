@@ -22,10 +22,7 @@ const PaymentService = {
     });
     if (!delivery) throw new Error('Delivery not found');
 
-    if (delivery.status !== 'open') {
-      throw new Error('Delivery is not open for payment authorization');
-    }
-
+   
     const purchaser = delivery.Purchaser;
     if (!purchaser) throw new Error('Purchaser not linked to delivery');
 

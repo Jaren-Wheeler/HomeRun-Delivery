@@ -26,13 +26,13 @@ const MapsService = {
     return Delivery.findAll({
       where: { status: 'open' },
       attributes: [
-        'delivery_id',
-        'pickup_address',
-        'item_description',
-        'proposed_payment',
+        'deliveryId',
+        'pickupAddress',
+        'itemDescription',
+        'proposedPayment',
         'status',
-        'purchaser_id',
-        'deliverer_id',
+        'purchaserId',
+        'delivererId',
         'latitude',
         'longitude',
       ],
@@ -40,11 +40,12 @@ const MapsService = {
         {
           model: User,
           as: 'Purchaser',
-          attributes: ['first_name', 'last_name'], // identification for UI only
+          attributes: ['first_name', 'last_name'],
         },
       ],
     });
-  },
+  }
+
 };
 
 module.exports = MapsService;

@@ -8,7 +8,7 @@ export default function DeliveryDetailsCard({ delivery }) {
     try {
       const { clientSecret } = await deliveryService.acceptJob(
         user.user_id,
-        delivery.delivery_id
+        delivery.deliveryId
       );
 
       alert('Job accepted! Payment authorization pending ✔');
@@ -21,17 +21,17 @@ export default function DeliveryDetailsCard({ delivery }) {
 
   return (
     <div className="bg-gray-900 text-white p-4 rounded-lg shadow-md max-w-xs space-y-2">
-      <h2 className="font-semibold text-lg">{delivery.item_description}</h2>
+      <h2 className="font-semibold text-lg">{delivery.itemDescription}</h2>
 
       <p className="text-sm text-gray-300">
         Buyer: {delivery.Purchaser?.first_name} {delivery.Purchaser?.last_name}
       </p>
 
-      <p className="text-sm text-gray-300">Pickup: {delivery.pickup_address}</p>
+      <p className="text-sm text-gray-300">Pickup: {delivery.pickupAddress}</p>
 
       <p className="text-sm">
         <span className="font-semibold">Payment: </span>$
-        {delivery.proposed_payment}
+        {delivery.proposedPayment}
       </p>
 
       {user?.role === 'deliverer' && (

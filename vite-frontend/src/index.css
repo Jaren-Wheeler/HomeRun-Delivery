@@ -1,3 +1,21 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Remove Google InfoWindow white container */
+.gm-style-iw {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* Remove the white background of the wrapper parent */
+.gm-style-iw-d {
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+/* Remove the default close button */
+.gm-ui-hover-effect {
+  display: none !important;
+}

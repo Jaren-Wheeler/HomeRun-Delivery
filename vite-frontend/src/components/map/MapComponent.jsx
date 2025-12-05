@@ -32,9 +32,7 @@ export default function MapComponent({ searchCenter }) {
   useEffect(() => {
     fetch("http://localhost:5000/api/maps/maps-key")
       .then((res) => res.json())
-      .then((data) => {
-        setApiKey(data.apiKey);
-      })
+      .then((data) => setApiKey(data.apiKey))
       .catch((err) => console.error("Failed to load key:", err));
   }, []);
 
@@ -50,7 +48,7 @@ export default function MapComponent({ searchCenter }) {
   }, [apiKey]);
 
   // ----------------------------------------------------------
-  // 3. Load Deliveries from backend
+  // 3. Load open deliveries
   // ----------------------------------------------------------
   useEffect(() => {
     fetch("http://localhost:5000/api/maps/markers")
@@ -60,7 +58,7 @@ export default function MapComponent({ searchCenter }) {
   }, []);
 
   // ----------------------------------------------------------
-  // 4. Geocode Deliveries to Marker Positions
+  // 4. Convert delivery addresses → coordinates
   // ----------------------------------------------------------
   useEffect(() => {
     if (!mapsReady || !deliveries.length) return;
@@ -72,15 +70,16 @@ export default function MapComponent({ searchCenter }) {
 
       for (const d of deliveries) {
         try {
-          const result = await geocoder.geocode({ address: d.pickup_address });
+          const result = await geocoder.geocode({
+            address: d.pickupAddress, // FIXED camelCase
+          });
 
           if (!result?.results?.length) continue;
 
           positions.push({
-            id: d.delivery_id,
+            id: d.deliveryId,
             lat: result.results[0].geometry.location.lat(),
             lng: result.results[0].geometry.location.lng(),
-            address: d.pickup_address,
             delivery: d,
           });
         } catch (err) {
@@ -95,7 +94,7 @@ export default function MapComponent({ searchCenter }) {
   }, [mapsReady, deliveries]);
 
   // ----------------------------------------------------------
-  // 5. Autocomplete Handlers
+  // 5. Autocomplete
   // ----------------------------------------------------------
   const onAutocompleteLoaded = (ac) => setAutocomplete(ac);
 
@@ -110,7 +109,7 @@ export default function MapComponent({ searchCenter }) {
   };
 
   // ----------------------------------------------------------
-  // 6. Filter Markers by Radius
+  // 6. Radius Filter
   // ----------------------------------------------------------
   const filteredMarkers = markerPositions.filter((m) => {
     if (!radius) return true;
@@ -141,44 +140,19 @@ export default function MapComponent({ searchCenter }) {
   return (
     <div className="w-full h-full relative">
 
-        {/* Floating Search Bar */}
-      <div
-        className="
-          absolute top-0 left-0 w-full 
-          flex justify-center 
-          pt-4 
-          z-50 
-          overflow-visible
-        "
-      >
-        <div
-          className="
-            flex gap-3 
-            bg-white 
-            shadow-lg 
-            rounded-xl 
-            px-4 py-3
-            items-center
-            z-50 
-          "
-        >
-          {/* Search Input */}
-          <Autocomplete
-            onLoad={onAutocompleteLoaded}
-            onPlaceChanged={onPlaceChanged}
-          >
+      {/* Float Search + Radius Box */}
+      <div className="absolute top-0 left-0 w-full flex justify-center pt-4 z-50">
+        <div className="flex gap-3 bg-white shadow-lg rounded-xl px-4 py-3 items-center">
+
+          <Autocomplete onLoad={onAutocompleteLoaded} onPlaceChanged={onPlaceChanged}>
             <input
               type="text"
               placeholder="Search cities…"
               className="
-                w-60 
-                px-3 py-2 
-                rounded-md 
+                w-60 px-3 py-2 rounded-md
                 border border-gray-300
-                focus:outline-none 
-                focus:ring-2 
-                focus:ring-blue-500
                 text-gray-900
+                focus:outline-none focus:ring-2 focus:ring-blue-500
               "
             />
           </Autocomplete>
@@ -186,7 +160,6 @@ export default function MapComponent({ searchCenter }) {
           <RadiusSelector onChange={(km) => setRadius(km)} />
         </div>
       </div>
-
 
       {/* MAP */}
       <GoogleMap
@@ -206,8 +179,15 @@ export default function MapComponent({ searchCenter }) {
           <InfoWindow
             position={{ lat: activeMarker.lat, lng: activeMarker.lng }}
             onCloseClick={() => setActiveMarker(null)}
+            options={{
+              pixelOffset: new window.google.maps.Size(0, -35), // lifts box above pin
+            }}
           >
-            <DeliveryDetailsCard delivery={activeMarker.delivery} />
+            <div className="p-0 bg-transparent">
+              <div className="bg-slate-900 p-4 rounded-xl shadow-lg text-white w-64">
+                <DeliveryDetailsCard delivery={activeMarker.delivery} />
+              </div>
+            </div>
           </InfoWindow>
         )}
       </GoogleMap>
