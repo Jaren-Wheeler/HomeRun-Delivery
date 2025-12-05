@@ -4,7 +4,7 @@ import deliveryService from "../api/deliveryService";
 import CreatePostingForm from "../components/purchaser/CreatePostingForm";
 import DeliveryCard from "../components/purchaser/DeliveryCard";
 import NavBar from "../components/common/NavBar";
-
+import PaymentInfoForm from "../components/purchaser/PaymentInfoForm";
 export default function PurchaserDashboardPage() {
   const { user } = useAuth();
   const purchaserId = user?.id;
@@ -14,6 +14,35 @@ export default function PurchaserDashboardPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  // Modal + selection states
+  const [selectedDelivery, setSelectedDelivery] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
+  // --------------------------------------------------------------------
+  // Handle clicking on a delivery card
+  // --------------------------------------------------------------------
+  function handleSelect(delivery) {
+    setSelectedDelivery(delivery);
+
+    if (delivery.status === "open") {
+      // Editable job
+      setShowEditModal(true);
+      setShowPaymentModal(false);
+    } else if (delivery.status === "closed") {
+      // Payment required
+      setShowPaymentModal(true);
+      setShowEditModal(false);
+    } else {
+      // Completed – no modal
+      setShowEditModal(false);
+      setShowPaymentModal(false);
+    }
+  }
+
+  // --------------------------------------------------------------------
+  // Load deliveries + in-progress deliveries
+  // --------------------------------------------------------------------
   const loadDeliveries = useCallback(async () => {
     if (!purchaserId) return;
 
@@ -29,9 +58,8 @@ export default function PurchaserDashboardPage() {
       console.log("All jobs:", allJobs);
       console.log("In-progress jobs:", inProgressJobs);
 
-      // Convert to map so in-progress overrides any stale entries
+      // Merge so in-progress overrides stale data
       const merged = new Map();
-
       allJobs.forEach(job => merged.set(job.deliveryId, job));
       inProgressJobs.forEach(job => merged.set(job.deliveryId, job));
 
@@ -44,16 +72,21 @@ export default function PurchaserDashboardPage() {
     }
   }, [purchaserId]);
 
-
   useEffect(() => {
     loadDeliveries();
   }, [loadDeliveries]);
 
+  // --------------------------------------------------------------------
+  // Filter list by status
+  // --------------------------------------------------------------------
   const filteredDeliveries = deliveries.filter((d) => {
     if (filterStatus === "all") return true;
-    return d.status === filterStatus; // "open" | "closed" | "completed"
+    return d.status === filterStatus;
   });
 
+  // --------------------------------------------------------------------
+  // Render UI
+  // --------------------------------------------------------------------
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
       <NavBar />
@@ -90,10 +123,11 @@ export default function PurchaserDashboardPage() {
               <p className="text-xs font-semibold text-slate-300 mb-1">
                 Filter posts
               </p>
+
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full rounded-lg bg-slate-950/70 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brandBlue focus:border-brandBlue"
+                className="w-full rounded-lg bg-slate-950/70 border border-slate-700 px-3 py-2 text-xs text-slate-100 focus:outline-none focus:ring-2 focus:ring-brandBlue"
               >
                 <option value="all">All statuses</option>
                 <option value="open">Open</option>
@@ -105,33 +139,27 @@ export default function PurchaserDashboardPage() {
             <div className="text-xs text-slate-400">
               <p>
                 <span className="inline-flex h-2 w-2 rounded-full bg-sky-400 mr-1" />
-                <span className="font-semibold text-slate-100">Open</span> –
-                waiting for a deliverer.
+                <span className="font-semibold text-slate-100">Open</span> – waiting for a deliverer.
               </p>
               <p>
                 <span className="inline-flex h-2 w-2 rounded-full bg-amber-400 mr-1" />
-                <span className="font-semibold text-slate-100">
-                  In progress
-                </span>{" "}
-                – accepted, not finished.
+                <span className="font-semibold text-slate-100">In progress</span> – accepted but unfinished.
               </p>
               <p>
                 <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400 mr-1" />
-                <span className="font-semibold text-slate-100">Completed</span>{" "}
-                – delivery finished and ready for capture.
+                <span className="font-semibold text-slate-100">Completed</span> – finished and ready for payment capture.
               </p>
             </div>
           </div>
         </section>
 
+        {/* Error message */}
         {errorMsg && <p className="text-red-400 text-sm">{errorMsg}</p>}
 
         {/* Delivery list */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-200">
-              Your delivery posts
-            </h2>
+            <h2 className="text-sm font-semibold text-slate-200">Your delivery posts</h2>
             {loading && <p className="text-xs text-slate-400">Loading…</p>}
           </div>
 
@@ -149,14 +177,48 @@ export default function PurchaserDashboardPage() {
                 <DeliveryCard
                   key={d.deliveryId}
                   delivery={d}
-                  onClick={() => {
-                    console.log("Clicked delivery", d.deliveryId);
-                  }}
+                  onSelect={() => handleSelect(d)}
                 />
               ))}
             </div>
           )}
         </section>
+
+        {/* --------------------------------------------- */}
+        {/* EDIT MODAL (Open jobs) */}
+        {/* --------------------------------------------- */}
+        {showEditModal && selectedDelivery && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+            <div className="bg-slate-900 p-6 rounded-xl border border-slate-700 w-[420px]">
+              <h2 className="text-lg font-bold mb-3">Edit Delivery #{selectedDelivery.deliveryId}</h2>
+
+              {/* Placeholder — replace with real edit form */}
+              <p className="text-slate-300 mb-4">
+                Editing UI will go here.
+              </p>
+
+              <button
+                className="mt-4 w-full bg-brandBlue px-4 py-2 rounded text-white"
+                onClick={() => setShowEditModal(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* --------------------------------------------- */}
+        {/* PAYMENT MODAL (Closed jobs) */}
+        {/* --------------------------------------------- */}
+        {showPaymentModal && selectedDelivery && (
+          <PaymentInfoForm
+            delivery={selectedDelivery}
+            onClose={() => setShowPaymentModal(false)}
+            onSuccess={loadDeliveries}   // Refresh dashboard after payment added
+          />
+        )}
+
+
       </main>
     </div>
   );

@@ -52,6 +52,12 @@ const deliveryService = {
     const response = await api.get(`/deliverer/${delivererId}/completed`);
     return response.data;
   },
+
+  getPaymentClientSecret: async (deliveryId) => {
+  const res = await api.get(`/payments/intent/${deliveryId}`);
+  return res.data.clientSecret;
+},
+
 };
 
 export default deliveryService;

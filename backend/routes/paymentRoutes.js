@@ -12,10 +12,13 @@
  *  - User must be the assigned deliverer for the delivery involved
  */
 
+
+
 const express = require('express');
 const router = express.Router();
 const { PaymentController } = require('../controllers');
-const { requireAuth, requireDeliverer } = require('../middleware');
+const { requireAuth, requireDeliverer, requirePurchaser } = require('../middleware');
+
 
 // ---------------------------------------------------------------------------
 // Payment Lifecycle Endpoints
@@ -57,4 +60,15 @@ router.post(
   PaymentController.cancel
 );
 
+/**
+ * GET /intent/:deliveryId
+ * Allows purchaser to fetch the PaymentIntent clientSecret
+ * so they can attach a payment method.
+ */
+router.get(
+  "/intent/:deliveryId",
+  requireAuth,
+  requirePurchaser,
+  PaymentController.getIntentForDelivery
+);
 module.exports = router;

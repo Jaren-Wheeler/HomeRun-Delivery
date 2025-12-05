@@ -106,6 +106,16 @@ const PaymentService = {
 
     return result;
   },
+
+  async getPaymentIntentClientSecret(deliveryId) {
+    const payment = await Payment.findOne({ where: { deliveryId } });
+    if (!payment) throw new Error("Payment record not found");
+
+    const intent = await stripe.paymentIntents.retrieve(payment.stripePaymentIntentId);
+
+    return { clientSecret: intent.client_secret };
+  }
+
 };
 
 module.exports = PaymentService;

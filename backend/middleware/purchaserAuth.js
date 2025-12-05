@@ -1,4 +1,4 @@
-module.exports = function requirePurchaser(req, res, next) {
+const requirePurchaser = async (req, res, next) => {
    // Roles that are allowed to access "purchaser" routes.
   const allowedRoles = ['purchaser', 'deliverer'];
 
@@ -9,3 +9,5 @@ module.exports = function requirePurchaser(req, res, next) {
   }
   next();
 };
+
+module.exports = requirePurchaser;

@@ -13,15 +13,11 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
-// --- DEFINITIVE CHECK ---
-if (!stripeKey) {
-  throw new Error(
-    'CRITICAL ERROR: VITE_STRIPE_PUBLISHABLE_KEY is not defined. Your .env file may not be loaded correctly. Please ensure it is in the `vite-frontend` directory and your Vite server is restarted.'
-  );
-}
+
 
 const stripePromise = loadStripe(stripeKey);
 
+console.log("Stripe key:", import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 export default function App() {
   return (

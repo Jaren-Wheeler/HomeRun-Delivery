@@ -71,6 +71,20 @@ const PaymentController = {
         .json({ error: err.message || 'Failed to cancel payment' });
     }
   },
+
+  async getIntentForDelivery(req, res) {
+    try {
+      const deliveryId = req.params.deliveryId;
+
+      const result = await PaymentService.getPaymentIntentClientSecret(deliveryId);
+
+      return res.json({ clientSecret: result.clientSecret });
+    } catch (err) {
+      console.error("❌ GetIntentForDelivery Error:", err);
+      return res.status(404).json({ error: err.message || "Payment intent not found" });
+    }
+  },
+
 };
 
 module.exports = PaymentController;
