@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import deliveryService from '../api/deliveryService';
 import NavBar from '../components/common/NavBar';
 import PendingJobsList from '../components/deliverer/PendingJobList';
-import MapComponent from '../components/map/MapComponent'; // ⭐ Use your map component
+import MapComponent from '../components/map/MapComponent'; 
 
 export default function DelivererDashboardPage() {
   const { user } = useAuth();
@@ -74,7 +74,7 @@ export default function DelivererDashboardPage() {
 
       {/* Deliverer's “Your Jobs” modal */}
       {showPending && (
-        <PendingJobList
+        <PendingJobsList
           delivererId={delivererId}
           onClose={() => setShowPending(false)}
         />

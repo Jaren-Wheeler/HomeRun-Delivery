@@ -62,19 +62,19 @@ export default function PendingJobsPopup({ delivererId, onClose }) {
               key={job.delivery_id}
               className="bg-gray-700 p-3 rounded-lg mb-3 border border-gray-600"
             >
-              <h3 className="font-semibold">{job.item_description}</h3>
+              <h3 className="font-semibold">{job.itemDescription}</h3>
               <p className="text-sm opacity-80">
                 {job.Purchaser?.first_name} {job.Purchaser?.last_name}
               </p>
               <p className="text-sm">
-                {job.pickup_address} → {job.dropoff_address}
+                {job.pickupAddress} → {job.dropoffAddress}
               </p>
               <p className="text-sm font-medium text-green-400">
-                ${job.proposed_payment}
+                ${job.proposedPayment}
               </p>
 
               <button
-                onClick={() => finishJob(job.delivery_id)}
+                onClick={() => finishJob(job.deliveryId)}
                 className="mt-2 w-full py-1 bg-brandBlue rounded hover:opacity-90 transition text-sm font-semibold"
               >
                 Finish Delivery
