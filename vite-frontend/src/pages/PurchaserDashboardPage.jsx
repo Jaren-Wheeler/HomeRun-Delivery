@@ -5,10 +5,15 @@ import CreatePostingForm from '../components/purchaser/CreatePostingForm';
 import DeliveryCard from '../components/purchaser/DeliveryCard';
 import NavBar from '../components/common/NavBar';
 
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements } from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+
 export default function PurchaserDashboardPage() {
   const { user } = useAuth();
   const purchaserId = user?.id;
-
+ 
   const [deliveries, setDeliveries] = useState([]);
   const [filterStatus, setFilterStatus] = useState('all');
   const [loading, setLoading] = useState(false);
@@ -67,10 +72,13 @@ export default function PurchaserDashboardPage() {
         {/* Top layout: create form + filter */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2">
-            <CreatePostingForm
-              purchaserId={purchaserId}
-              onCreated={loadDeliveries}
-            />
+            <Elements stripe={stripePromise}>
+                <CreatePostingForm
+                  purchaserId={purchaserId}
+                  onCreated={loadDeliveries}
+                />
+            </Elements>
+            
           </div>
 
           <div className="bg-slate-900/80 border border-slate-700/70 rounded-2xl p-4 shadow-md shadow-black/40 flex flex-col gap-3">

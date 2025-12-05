@@ -6,13 +6,22 @@ import RegisterPage from './pages/RegisterPage';
 import PurchaserDashboardPage from './pages/PurchaserDashboardPage';
 import DelivererDashboardPage from './pages/DelivererDashboardPage';
 
-import ProtectedRoute from '../router/ProtectedRoute.jsx';
-import RoleRoute from '../router/RoleRoute.jsx';
+import ProtectedRoute from './router/ProtectedRoute';
+import RoleRoute from './router/RoleRoute';
 
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+// --- DEFINITIVE CHECK ---
+if (!stripeKey) {
+  throw new Error(
+    'CRITICAL ERROR: VITE_STRIPE_PUBLISHABLE_KEY is not defined. Your .env file may not be loaded correctly. Please ensure it is in the `vite-frontend` directory and your Vite server is restarted.'
+  );
+}
+
+const stripePromise = loadStripe(stripeKey);
+
 
 export default function App() {
   return (
@@ -29,10 +38,9 @@ export default function App() {
               path="/purchaser-dashboard"
               element={
                 <ProtectedRoute>
-                  <RoleRoute role="purchaser">
-                    <PurchaserDashboardPage />
-                  </RoleRoute>
+                  <PurchaserDashboardPage />
                 </ProtectedRoute>
+                    
               }
             />
 

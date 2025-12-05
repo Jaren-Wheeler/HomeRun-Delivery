@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from 'react';
 import authService from '../api/authService';
+import axios from 'axios';
 
 const AuthContext = createContext(null);
 
@@ -33,6 +34,8 @@ export function AuthProvider({ children }) {
     setUser(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    delete axios.defaults.headers.common['Authorization'];
+    navigate('/login');
   };
 
   const setAuth = (rawUser, token) => {

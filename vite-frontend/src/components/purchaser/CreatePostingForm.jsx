@@ -54,7 +54,7 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
       const coords = await geocodeAddress(pickupAddress);
 
       // 1️⃣ Create Delivery entry in DB
-      const delivery = await deliveryService.createDelivery({
+    const { delivery, clientSecret } = await deliveryService.createDelivery({
         pickup_address: pickupAddress,
         dropoff_address: dropoffAddress,
         item_description: description,
@@ -64,15 +64,14 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
         longitude: coords?.lng ?? null,
       });
 
-      if (!delivery.deliveryId) {
-        throw new Error('Backend did not return deliveryId');
+      if (!delivery?.deliveryId) {
+        throw new Error('Backend did not return a deliveryId');
       }
 
       // 2️⃣ Create Stripe PaymentIntent
-      const { clientSecret } = await deliveryService.createPaymentIntent(
-        delivery.deliveryId
-      );
-      if (!clientSecret) throw new Error('Missing clientSecret from backend');
+       if (!clientSecret) {
+        throw new Error('Missing clientSecret from backend response');
+      }
 
       // 3️⃣ Confirm Payment Method using Stripe
       const cardElement = elements.getElement(CardElement);
@@ -90,7 +89,7 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
       setDropoffAddress('');
       setDescription('');
       setPayment('');
-      cardElement.clear();
+      if (cardElement) cardElement.clear();
       if (onCreated) onCreated();
     } catch (err) {
       console.error('Create delivery failed:', err);
@@ -119,6 +118,7 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
             onChange={(e) => setPickupAddress(e.target.value)}
             className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100"
             required
+            disabled={loading}
           />
         </div>
 
@@ -129,6 +129,7 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
             onChange={(e) => setDropoffAddress(e.target.value)}
             className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100"
             required
+            disabled={loading}
           />
         </div>
 
@@ -139,6 +140,7 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
             onChange={(e) => setDescription(e.target.value)}
             className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100 min-h-[70px]"
             required
+            disabled={loading}
           />
         </div>
 
@@ -150,6 +152,7 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
             onChange={(e) => setPayment(e.target.value)}
             className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-slate-100"
             required
+            disabled={loading}
           />
         </div>
 
@@ -159,8 +162,13 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
             Payment Method
           </label>
 
-          <div className="rounded-lg bg-slate-950 border border-slate-700 px-3 py-3 mt-1">
+          <div 
+            className="rounded-lg bg-slate-950 border border-slate-700 px-3 py-3 mt-1"
+            // This style ensures the div is always clickable
+            style={{ pointerEvents: 'auto' }}
+          >
             <CardElement
+              disabled={loading}
               options={{
                 style: {
                   base: {
@@ -169,6 +177,10 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
                     '::placeholder': { color: '#8899a6' },
                   },
                   invalid: { color: '#ff6b6b' },
+                  disabled: {
+                    color: '#8899a6',
+                    backgroundColor: 'rgba(0,0,0,0.1)'
+                  }
                 },
               }}
             />
@@ -177,7 +189,7 @@ export default function CreatePostingForm({ purchaserId, onCreated }) {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={!stripe || loading}
           className="w-full mt-2 bg-brandBlue text-white py-2 rounded-lg font-semibold disabled:opacity-50"
         >
           {loading ? 'Processing…' : 'Submit request'}
