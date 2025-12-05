@@ -24,6 +24,26 @@ const PurchaserService = {
   },
 
   /**
+   * Purchaser dashboard list:
+   * Only return jobs that have been accepted by a deliverer but not completed
+   */
+  async getPurchaserInProgressJobs(purchaserId) {
+    return Delivery.findAll({
+      where: {
+        purchaserId,
+        status: "closed"   // accepted but not completed
+      },
+      include: [
+        {
+          model: User,
+          as: "Deliverer",
+          attributes: ["first_name", "last_name"]
+        }
+      ]
+    });
+  },
+
+  /**
    * Create Delivery + Stripe PaymentIntent
    *
    * Lifecycle:

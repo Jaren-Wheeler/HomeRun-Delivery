@@ -24,6 +24,11 @@ const deliveryService = {
     return response.data;
   },
 
+  getPurchaserInProgressJobs: async (purchaserId) => {
+    const response = await api.get(`/purchaser/${purchaserId}/in-progress`);
+    return response.data;
+  },
+
   getPendingDelivererJobs: async (delivererId) => {
     const response = await api.get(`/deliverer/${delivererId}/pending`);
     return response.data;

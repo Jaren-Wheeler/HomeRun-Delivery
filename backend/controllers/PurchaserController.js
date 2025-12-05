@@ -24,6 +24,19 @@ const PurchaserController = {
     }
   },
 
+  async getInProgressJobs(req, res) {
+    try {
+      const purchaserId = req.params.id;
+
+      const jobs = await PurchaserService.getPurchaserInProgressJobs(purchaserId);
+
+      res.json(jobs);
+    } catch (err) {
+      console.error("❌ Purchaser In-Progress Jobs Error:", err);
+      res.status(500).json({ error: "Failed to load in-progress jobs" });
+    }
+  },
+
   /**
    * POST /api/purchaser
    *

@@ -25,13 +25,24 @@ router.post(
 
 /**
  * GET /api/purchaser/:id/pending
- * Returns delivery posts made by this purchaser
+ * Returns delivery posts made by this purchaser that are open
  */
 router.get(
   '/:id/pending',
   requireAuth,
   requirePurchaser,
   PurchaserController.getPurchaserPendingJobs
+);
+
+/**
+ * GET /api/purchaser/:id/in-progress
+ * Returns delivery posts made by this purchaser that have been accepted by a deliverer but not completed
+ */
+router.get(
+  "/:id/in-progress", 
+  requireAuth, 
+  requirePurchaser,
+  PurchaserController.getInProgressJobs
 );
 
 /**

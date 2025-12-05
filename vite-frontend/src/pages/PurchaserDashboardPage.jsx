@@ -1,44 +1,57 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useAuth } from '../context/AuthContext';
-import deliveryService from '../api/deliveryService';
-import CreatePostingForm from '../components/purchaser/CreatePostingForm';
-import DeliveryCard from '../components/purchaser/DeliveryCard';
-import NavBar from '../components/common/NavBar';
-
-
+import { useEffect, useState, useCallback } from "react";
+import { useAuth } from "../context/AuthContext";
+import deliveryService from "../api/deliveryService";
+import CreatePostingForm from "../components/purchaser/CreatePostingForm";
+import DeliveryCard from "../components/purchaser/DeliveryCard";
+import NavBar from "../components/common/NavBar";
 
 export default function PurchaserDashboardPage() {
   const { user } = useAuth();
   const purchaserId = user?.id;
- 
+
   const [deliveries, setDeliveries] = useState([]);
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState("all");
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
 
   const loadDeliveries = useCallback(async () => {
     if (!purchaserId) return;
+
     setLoading(true);
-    setErrorMsg('');
+    setErrorMsg("");
 
     try {
-      const data = await deliveryService.getPurchaserDeliveries(purchaserId);
-      setDeliveries(data || []);
+      const [allJobs, inProgressJobs] = await Promise.all([
+        deliveryService.getPurchaserDeliveries(purchaserId),
+        deliveryService.getPurchaserInProgressJobs(purchaserId)
+      ]);
+
+      console.log("All jobs:", allJobs);
+      console.log("In-progress jobs:", inProgressJobs);
+
+      // Convert to map so in-progress overrides any stale entries
+      const merged = new Map();
+
+      allJobs.forEach(job => merged.set(job.deliveryId, job));
+      inProgressJobs.forEach(job => merged.set(job.deliveryId, job));
+
+      setDeliveries([...merged.values()]);
     } catch (err) {
-      console.error('Failed to load deliveries:', err);
-      setErrorMsg('Failed to load your deliveries.');
+      console.error("Failed loading deliveries:", err);
+      setErrorMsg("Failed to load deliveries.");
     } finally {
       setLoading(false);
     }
   }, [purchaserId]);
+
 
   useEffect(() => {
     loadDeliveries();
   }, [loadDeliveries]);
 
   const filteredDeliveries = deliveries.filter((d) => {
-    if (filterStatus === 'all') return true;
-    return d.status === filterStatus;
+    if (filterStatus === "all") return true;
+    return d.status === filterStatus; // "open" | "closed" | "completed"
   });
 
   return (
@@ -59,22 +72,17 @@ export default function PurchaserDashboardPage() {
 
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            Logged in as{' '}
+            Logged in as{" "}
             <span className="font-semibold text-slate-100">
               {user?.first_name} {user?.last_name}
             </span>
           </div>
         </header>
 
-        {/* Top layout: create form + filter */}
+        {/* Create posting + filters */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2">
-         
-            <CreatePostingForm
-              purchaserId={purchaserId}
-              onCreated={loadDeliveries}
-            />
-            
+            <CreatePostingForm purchaserId={purchaserId} onCreated={loadDeliveries} />
           </div>
 
           <div className="bg-slate-900/80 border border-slate-700/70 rounded-2xl p-4 shadow-md shadow-black/40 flex flex-col gap-3">
@@ -104,19 +112,18 @@ export default function PurchaserDashboardPage() {
                 <span className="inline-flex h-2 w-2 rounded-full bg-amber-400 mr-1" />
                 <span className="font-semibold text-slate-100">
                   In progress
-                </span>{' '}
+                </span>{" "}
                 – accepted, not finished.
               </p>
               <p>
                 <span className="inline-flex h-2 w-2 rounded-full bg-emerald-400 mr-1" />
-                <span className="font-semibold text-slate-100">Completed</span>{' '}
+                <span className="font-semibold text-slate-100">Completed</span>{" "}
                 – delivery finished and ready for capture.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Error / loading */}
         {errorMsg && <p className="text-red-400 text-sm">{errorMsg}</p>}
 
         {/* Delivery list */}
@@ -143,8 +150,7 @@ export default function PurchaserDashboardPage() {
                   key={d.deliveryId}
                   delivery={d}
                   onClick={() => {
-                    // Later: open manage / rate modal here
-                    console.log('Clicked delivery', d.deliveryId);
+                    console.log("Clicked delivery", d.deliveryId);
                   }}
                 />
               ))}
